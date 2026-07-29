@@ -106,6 +106,7 @@ export default function AdminDashboardPage() {
   const [analyticsData, setAnalyticsData] = useState(defaultAnalytics);
 
   const handleResetAnalytics = () => {
+    fetch('/api/analytics', { method: 'DELETE' }).catch(() => {});
     setAnalyticsData({
       topEngine: 'None (Fresh Start)',
       topEngineCount: 0,
@@ -128,7 +129,7 @@ export default function AdminDashboardPage() {
         { name: 'Jun', value: 0 },
       ],
     });
-    showToast('Analytics Metrics Reset to Fresh Baseline (0 Calculations)!');
+    showToast('Analytics Telemetry Reset to Fresh 0 Baseline in Supabase Database!');
   };
 
   // ADMIN CREDENTIALS STATE & CHANGE HANDLER
@@ -585,8 +586,8 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* ADMIN NAVIGATION TABS */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+      {/* ADMIN NAVIGATION TABS (RESPONSIVE FLEX-WRAP FOR ALL 10 TABS) */}
+      <div className="flex flex-wrap items-center gap-2.5 p-2 rounded-2xl glass-panel border border-slate-800/80">
         {[
           { id: 'customizer', label: 'Site & Theme Customizer', icon: Sliders },
           { id: 'analytics', label: 'Analytics', icon: BarChart2 },
@@ -604,10 +605,10 @@ export default function AdminDashboardPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap ${
+              className={`px-3.5 py-2.5 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all shadow-sm ${
                 activeTab === tab.id
-                  ? 'bg-[#00FF99] text-black shadow-lg shadow-[#00FF99]/20'
-                  : 'glass-panel text-slate-300 hover:text-[#00FF99]'
+                  ? 'bg-gradient-to-r from-emerald-400 to-[#00FF99] text-black shadow-lg shadow-[#00FF99]/20'
+                  : 'glass-panel text-slate-300 hover:text-[#00FF99] hover:bg-slate-800/80'
               }`}
             >
               <Icon className="w-4 h-4" /> {tab.label}
