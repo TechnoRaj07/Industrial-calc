@@ -287,8 +287,41 @@ export default function AdminDashboardPage() {
     },
   });
 
-  // Load persisted configs on mount
+  // Load persisted configs and MongoDB state on mount
   useEffect(() => {
+    // 1. Trigger MongoDB Seed if empty
+    fetch('/api/seed', { method: 'POST' }).catch(() => {});
+
+    // 2. Fetch Site Settings from MongoDB
+    fetch('/api/settings')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.config) {
+          setSiteConfig(data.config);
+        }
+      })
+      .catch(() => {});
+
+    // 3. Fetch Blogs from MongoDB
+    fetch('/api/blogs')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.posts && data.posts.length > 0) {
+          setBlogPosts(data.posts);
+        }
+      })
+      .catch(() => {});
+
+    // 4. Fetch Users from MongoDB
+    fetch('/api/users')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.users && data.users.length > 0) {
+          setUsers(data.users);
+        }
+      })
+      .catch(() => {});
+
     const savedSite = localStorage.getItem('industrialcalc_siteConfig');
     if (savedSite) {
       try {
@@ -351,10 +384,21 @@ export default function AdminDashboardPage() {
     showToast('Generated 8 New Emergency Backup Recovery Codes!');
   };
 
-  // Save Customizer Config
+  // Save Customizer Config (Sync with LocalStorage & MongoDB Database)
   const handleSaveCustomizer = () => {
     localStorage.setItem('industrialcalc_siteConfig', JSON.stringify(siteConfig));
-    showToast('Saved Contact Details, Logo, Favicon, Colors & Branding Settings!');
+    fetch('/api/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(siteConfig),
+    })
+      .then((res) => res.json())
+      .then(() => {
+        showToast('Saved to MongoDB Database & LocalStorage Successfully!');
+      })
+      .catch(() => {
+        showToast('Saved to LocalStorage (MongoDB sync deferred)');
+      });
   };
 
   // Save System Config

@@ -9,6 +9,7 @@ export interface IUser extends Document {
   isBlocked: boolean;
   twoFactorEnabled: boolean;
   twoFactorSecret?: string;
+  phoneNumber?: string;
   googleId?: string;
   lastLogin?: Date;
   createdAt: Date;
@@ -22,6 +23,7 @@ const UserSchema = new Schema<IUser>({
   isBlocked: { type: Boolean, default: false },
   twoFactorEnabled: { type: Boolean, default: false },
   twoFactorSecret: { type: String },
+  phoneNumber: { type: String },
   googleId: { type: String },
   lastLogin: { type: Date },
   createdAt: { type: Date, default: Date.now },
@@ -88,7 +90,7 @@ export interface IMedia extends Document {
   filename: string;
   url: string;
   mimeType: string;
-  size: number;
+  size: string;
   uploadedAt: Date;
 }
 
@@ -96,11 +98,25 @@ const MediaSchema = new Schema<IMedia>({
   filename: { type: String, required: true },
   url: { type: String, required: true },
   mimeType: { type: String, required: true },
-  size: { type: Number, required: true },
+  size: { type: String, required: true },
   uploadedAt: { type: Date, default: Date.now },
+});
+
+// Site & Theme Settings Schema
+export interface ISiteSetting extends Document {
+  key: string;
+  value: Record<string, any>;
+  updatedAt: Date;
+}
+
+const SiteSettingSchema = new Schema<ISiteSetting>({
+  key: { type: String, required: true, unique: true },
+  value: { type: Schema.Types.Mixed, required: true },
+  updatedAt: { type: Date, default: Date.now },
 });
 
 export const User = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
 export const Report = mongoose.models.Report || mongoose.model<IReport>('Report', ReportSchema);
 export const BlogPost = mongoose.models.BlogPost || mongoose.model<IBlogPost>('BlogPost', BlogSchema);
 export const Media = mongoose.models.Media || mongoose.model<IMedia>('Media', MediaSchema);
+export const SiteSetting = mongoose.models.SiteSetting || mongoose.model<ISiteSetting>('SiteSetting', SiteSettingSchema);
