@@ -220,7 +220,7 @@ export default function AdminDashboardPage() {
     maintenanceMode: false,
   });
 
-  // Site & Theme Customizer State
+  // Site & Theme Customizer State (ALL 25 PARAMETERS INCLUDED)
   const [siteConfig, setSiteConfig] = useState({
     logoUrl: '/branding/logo.png',
     faviconUrl: '/favicon.ico',
@@ -354,7 +354,7 @@ export default function AdminDashboardPage() {
   // Save Customizer Config
   const handleSaveCustomizer = () => {
     localStorage.setItem('industrialcalc_siteConfig', JSON.stringify(siteConfig));
-    showToast('Saved Contact Details, Map Locations, Colors & Branding Settings!');
+    showToast('Saved Contact Details, Logo, Favicon, Colors & Branding Settings!');
   };
 
   // Save System Config
@@ -519,7 +519,7 @@ export default function AdminDashboardPage() {
           <div>
             <h1 className="text-2xl font-black text-slate-900 dark:text-white">Admin Control Suite</h1>
             <p className="text-xs text-slate-400">
-              Manage Credentials, 2FA Security, Site Customizer, Analytics Reset, CMS & Telemetry
+              Manage Credentials, 2FA Security, Site Customizer, Logo/Favicon, Analytics Reset, CMS & Telemetry
             </p>
           </div>
         </div>
@@ -572,306 +572,13 @@ export default function AdminDashboardPage() {
         })}
       </div>
 
-      {/* TAB: ANALYTICS (WITH RESET ANALYTICS FEATURE) */}
-      {activeTab === 'analytics' && (
-        <div className="space-y-8">
-          <div className="flex items-center justify-between glass-panel p-4 rounded-2xl border border-slate-800">
-            <div>
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <BarChart2 className="w-5 h-5 text-[#00FF99]" /> System Real-time Telemetry Analytics
-              </h3>
-              <p className="text-xs text-slate-400">Calculation engine usage metrics, conversions, and regional distribution</p>
-            </div>
-            <button
-              onClick={handleResetAnalytics}
-              className="px-4 py-2 rounded-xl bg-red-600/20 text-red-400 hover:bg-red-600 hover:text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md"
-            >
-              <RotateCcw className="w-4 h-4" /> Reset Analytics (Fresh Baseline)
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <GlassCard hoverEffect={false}>
-              <div className="text-xs font-bold text-slate-400 uppercase">Top Calculator Engine</div>
-              <div className="text-2xl font-black text-[#00FF99] mt-1">{analyticsData.topEngine}</div>
-              <div className="text-[11px] text-slate-500 mt-1">{analyticsData.topEngineCount} calculations logged</div>
-            </GlassCard>
-            <GlassCard hoverEffect={false}>
-              <div className="text-xs font-bold text-slate-400 uppercase">Lead Conversions</div>
-              <div className="text-2xl font-black text-[#00E5FF] mt-1">{analyticsData.conversionRate}%</div>
-              <div className="text-[11px] text-slate-500 mt-1">Report download conversion rate</div>
-            </GlassCard>
-            <GlassCard hoverEffect={false}>
-              <div className="text-xs font-bold text-slate-400 uppercase">Total User Leads</div>
-              <div className="text-2xl font-black text-[#FF007A] mt-1">{analyticsData.totalLeads}</div>
-              <div className="text-[11px] text-slate-500 mt-1">Across 24 professional roles</div>
-            </GlassCard>
-            <GlassCard hoverEffect={false}>
-              <div className="text-xs font-bold text-slate-400 uppercase">Active Countries</div>
-              <div className="text-2xl font-black text-white mt-1">{analyticsData.activeCountries} Nations</div>
-              <div className="text-[11px] text-slate-500 mt-1">Global user reach</div>
-            </GlassCard>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <ChartView data={analyticsData.topCalculatorsChart} title="Most Used Calculator Engines (30 Days)" />
-            <ChartView data={analyticsData.conversionsChart} title="Report Downloads & Lead Conversions Trend" />
-          </div>
-        </div>
-      )}
-
-      {/* TAB: SYSTEM CONFIG, CREDENTIALS & 2FA AUTHENTICATION */}
-      {activeTab === 'settings' && (
-        <div className="space-y-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* LEFT COL: CHANGE CREDENTIALS & SYSTEM CONFIG */}
-            <div className="lg:col-span-6 space-y-6">
-              {/* CHANGE ADMIN CREDENTIALS CARD */}
-              <GlassCard hoverEffect={false} className="space-y-4 border-[#00FF99]/40">
-                <h3 className="text-base font-bold text-[#00FF99] flex items-center gap-2">
-                  <Key className="w-5 h-5" /> Change Admin Login Credentials
-                </h3>
-                <form onSubmit={handleChangeCredentials} className="space-y-3 text-xs">
-                  <div>
-                    <label className="block text-slate-300 font-bold mb-1">Admin Email Address</label>
-                    <input
-                      type="email"
-                      required
-                      value={credForm.newEmail}
-                      onChange={(e) => setCredForm({ ...credForm, newEmail: e.target.value })}
-                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white font-mono"
-                    />
-                  </div>
-
-                  <div className="pt-1">
-                    <label className="block text-slate-300 font-bold mb-1">New Password (Leave blank to keep current)</label>
-                    <input
-                      type="password"
-                      placeholder="Enter new strong password"
-                      value={credForm.newPassword}
-                      onChange={(e) => setCredForm({ ...credForm, newPassword: e.target.value })}
-                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white font-mono"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-300 font-bold mb-1">Confirm New Password</label>
-                    <input
-                      type="password"
-                      placeholder="Re-enter new password"
-                      value={credForm.confirmPassword}
-                      onChange={(e) => setCredForm({ ...credForm, confirmPassword: e.target.value })}
-                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white font-mono"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-[#00FF99] text-black font-extrabold uppercase tracking-wider transition-all shadow-md mt-2"
-                  >
-                    Update Admin Credentials
-                  </button>
-                </form>
-              </GlassCard>
-
-              {/* SYSTEM CONFIG CARD */}
-              <GlassCard hoverEffect={false} className="space-y-4">
-                <h3 className="text-base font-bold text-[#00E5FF] flex items-center gap-2">
-                  <Settings className="w-5 h-5" /> Infrastructure & Server Configuration
-                </h3>
-
-                <form onSubmit={handleSaveSystemSettings} className="space-y-3 text-xs">
-                  <div>
-                    <label className="block text-slate-400 font-mono mb-1">SITE NAME</label>
-                    <input
-                      type="text"
-                      value={systemSettings.siteName}
-                      onChange={(e) => setSystemSettings({ ...systemSettings, siteName: e.target.value })}
-                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-400 font-mono mb-1">MONGODB ATLAS CONNECTION URI</label>
-                    <input
-                      type="password"
-                      value={systemSettings.mongoUri}
-                      onChange={(e) => setSystemSettings({ ...systemSettings, mongoUri: e.target.value })}
-                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white font-mono"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-slate-400 font-mono mb-1">JWT SECRET</label>
-                      <input
-                        type="password"
-                        value={systemSettings.jwtSecret}
-                        onChange={(e) => setSystemSettings({ ...systemSettings, jwtSecret: e.target.value })}
-                        className="w-full px-3.5 py-2 rounded-xl glass-panel text-white font-mono"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-slate-400 font-mono mb-1">SMTP HOST</label>
-                      <input
-                        type="text"
-                        value={systemSettings.smtpHost}
-                        onChange={(e) => setSystemSettings({ ...systemSettings, smtpHost: e.target.value })}
-                        className="w-full px-3.5 py-2 rounded-xl glass-panel text-white"
-                      />
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold uppercase tracking-wider transition-all"
-                  >
-                    Save Server Infrastructure
-                  </button>
-                </form>
-              </GlassCard>
-            </div>
-
-            {/* RIGHT COL: 2FA & MULTI-FACTOR SECURITY MANAGER */}
-            <div className="lg:col-span-6 space-y-6">
-              <GlassCard hoverEffect={false} className="space-y-5 border-[#FF007A]/40">
-                <h3 className="text-base font-bold text-[#FF007A] flex items-center gap-2">
-                  <ShieldAlert className="w-5 h-5" /> Multi-Factor Security & 2FA Authentication
-                </h3>
-
-                {/* TOTP 2FA GOOGLE AUTHENTICATOR */}
-                <div className="p-4 rounded-2xl glass-panel border border-slate-800 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Smartphone className="w-5 h-5 text-[#00FF99]" />
-                      <div>
-                        <div className="text-xs font-bold text-white">Google Authenticator (TOTP 2FA)</div>
-                        <div className="text-[11px] text-slate-400">Time-based one-time passwords via 2FA apps</div>
-                      </div>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={twoFactorConfig.totpEnabled}
-                        onChange={(e) =>
-                          handleSave2FA({ ...twoFactorConfig, totpEnabled: e.target.checked })
-                        }
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00FF99]" />
-                    </label>
-                  </div>
-
-                  {twoFactorConfig.totpEnabled && (
-                    <div className="pt-2 flex items-center justify-between border-t border-slate-800 text-xs">
-                      <span className="font-mono text-slate-400">Secret: {twoFactorConfig.secretKey}</span>
-                      <button
-                        onClick={() => setShowQrModal(true)}
-                        className="px-3 py-1 rounded-lg bg-emerald-500/20 text-[#00FF99] font-bold flex items-center gap-1"
-                      >
-                        <QrCode className="w-3.5 h-3.5" /> Setup QR Code
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* SMS & WHATSAPP AUTHENTICATION */}
-                <div className="p-4 rounded-2xl glass-panel border border-slate-800 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <MessageSquare className="w-5 h-5 text-[#00E5FF]" />
-                      <div>
-                        <div className="text-xs font-bold text-white">SMS & WhatsApp Message Auth</div>
-                        <div className="text-[11px] text-slate-400">Receive 6-digit OTP codes via mobile SMS</div>
-                      </div>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={twoFactorConfig.smsEnabled}
-                        onChange={(e) =>
-                          handleSave2FA({ ...twoFactorConfig, smsEnabled: e.target.checked })
-                        }
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00E5FF]" />
-                    </label>
-                  </div>
-
-                  {twoFactorConfig.smsEnabled && (
-                    <div className="pt-2 text-xs space-y-1">
-                      <label className="block text-slate-400">Registered Phone Number</label>
-                      <input
-                        type="text"
-                        value={twoFactorConfig.phoneNumber}
-                        onChange={(e) =>
-                          handleSave2FA({ ...twoFactorConfig, phoneNumber: e.target.value })
-                        }
-                        className="w-full px-3 py-1.5 rounded-xl glass-panel text-white font-mono"
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {/* EMAIL OTP CODE AUTHENTICATION */}
-                <div className="p-4 rounded-2xl glass-panel border border-slate-800 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Mail className="w-5 h-5 text-pink-400" />
-                      <div>
-                        <div className="text-xs font-bold text-white">Email OTP Verification Code</div>
-                        <div className="text-[11px] text-slate-400">Send authentication code to admin email</div>
-                      </div>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={twoFactorConfig.emailOtpEnabled}
-                        onChange={(e) =>
-                          handleSave2FA({ ...twoFactorConfig, emailOtpEnabled: e.target.checked })
-                        }
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-500" />
-                    </label>
-                  </div>
-                </div>
-
-                {/* EMERGENCY RECOVERY CODES */}
-                <div className="p-4 rounded-2xl glass-panel border border-slate-800 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-xs font-bold text-white">Emergency Backup Recovery Codes</div>
-                      <div className="text-[11px] text-slate-400">Single-use codes for emergency access</div>
-                    </div>
-                    <button
-                      onClick={handleGenerateBackupCodes}
-                      className="px-3 py-1.5 rounded-xl bg-pink-600/20 text-pink-400 hover:bg-pink-600 hover:text-white text-xs font-bold transition-colors"
-                    >
-                      Generate New Codes
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 text-[11px] font-mono text-slate-300 bg-slate-950 p-3 rounded-xl border border-slate-800">
-                    {twoFactorConfig.backupCodes.map((code, idx) => (
-                      <div key={idx} className="flex items-center gap-1">
-                        <span className="text-slate-500">{idx + 1}.</span> {code}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </GlassCard>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* OTHER TABS */}
-      {/* SITE & THEME CUSTOMIZER */}
+      {/* TAB 1: SITE & THEME CUSTOMIZER (RESTORED COMPLETE SECTIONS) */}
       {activeTab === 'customizer' && (
         <div className="space-y-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Left Col */}
             <div className="lg:col-span-6 space-y-6">
+              {/* CONTACT DETAILS & MAP LOCATION SECTION */}
               <GlassCard hoverEffect={false} className="space-y-4 border-[#00FF99]/40">
                 <h3 className="text-base font-bold text-[#00FF99] flex items-center gap-2">
                   <Mail className="w-5 h-5" /> Contact Information & Global Map Settings
@@ -923,8 +630,321 @@ export default function AdminDashboardPage() {
                   </div>
                 </div>
               </GlassCard>
+
+              {/* LOGO, FAVICON & BRAND IDENTITY */}
+              <GlassCard hoverEffect={false} className="space-y-4">
+                <h3 className="text-base font-bold text-[#00E5FF] flex items-center gap-2">
+                  <ImageIcon className="w-5 h-5" /> Logo, Favicon & Site Identity
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                  <div>
+                    <label className="block text-slate-300 font-bold mb-1">Website Name</label>
+                    <input
+                      type="text"
+                      value={siteConfig.websiteName}
+                      onChange={(e) => setSiteConfig({ ...siteConfig, websiteName: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 font-bold mb-1">Slogan / Subtitle</label>
+                    <input
+                      type="text"
+                      value={siteConfig.slogan}
+                      onChange={(e) => setSiteConfig({ ...siteConfig, slogan: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 font-bold mb-1">Logo Image URL</label>
+                    <input
+                      type="text"
+                      value={siteConfig.logoUrl}
+                      onChange={(e) => setSiteConfig({ ...siteConfig, logoUrl: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 font-bold mb-1">Favicon URL</label>
+                    <input
+                      type="text"
+                      value={siteConfig.faviconUrl}
+                      onChange={(e) => setSiteConfig({ ...siteConfig, faviconUrl: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white font-mono"
+                    />
+                  </div>
+                </div>
+              </GlassCard>
+
+              {/* HERO SECTION TEXT & BUTTONS */}
+              <GlassCard hoverEffect={false} className="space-y-4">
+                <h3 className="text-base font-bold text-[#FF007A] flex items-center gap-2">
+                  <Layout className="w-5 h-5" /> Hero Section, Text & Action Buttons
+                </h3>
+                <div className="space-y-3 text-xs">
+                  <div>
+                    <label className="block text-slate-300 font-bold mb-1">Hero Badge Text</label>
+                    <input
+                      type="text"
+                      value={siteConfig.heroBadgeText}
+                      onChange={(e) => setSiteConfig({ ...siteConfig, heroBadgeText: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 font-bold mb-1">Hero Headline Text</label>
+                    <input
+                      type="text"
+                      value={siteConfig.heroTitle}
+                      onChange={(e) => setSiteConfig({ ...siteConfig, heroTitle: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 font-bold mb-1">Hero Subtext Description</label>
+                    <textarea
+                      rows={2}
+                      value={siteConfig.heroSubtext}
+                      onChange={(e) => setSiteConfig({ ...siteConfig, heroSubtext: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-slate-300 font-bold mb-1">Primary Hero Button Text</label>
+                      <input
+                        type="text"
+                        value={siteConfig.heroPrimaryBtnText}
+                        onChange={(e) => setSiteConfig({ ...siteConfig, heroPrimaryBtnText: e.target.value })}
+                        className="w-full px-3.5 py-2 rounded-xl glass-panel text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-300 font-bold mb-1">Secondary Hero Button Text</label>
+                      <input
+                        type="text"
+                        value={siteConfig.heroSecondaryBtnText}
+                        onChange={(e) => setSiteConfig({ ...siteConfig, heroSecondaryBtnText: e.target.value })}
+                        className="w-full px-3.5 py-2 rounded-xl glass-panel text-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </GlassCard>
             </div>
+
+            {/* Right Col */}
             <div className="lg:col-span-6 space-y-6">
+              {/* MEDIA, VIDEOS & ANIMATIONS */}
+              <GlassCard hoverEffect={false} className="space-y-4">
+                <h3 className="text-base font-bold text-[#FF007A] flex items-center gap-2">
+                  <Video className="w-5 h-5" /> Media, Animations & Background Video/Images
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                  <div>
+                    <label className="block text-slate-300 font-bold mb-1">Hero Background Image</label>
+                    <input
+                      type="text"
+                      placeholder="https://..."
+                      value={siteConfig.heroImageUrl}
+                      onChange={(e) => setSiteConfig({ ...siteConfig, heroImageUrl: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 font-bold mb-1">Hero Video URL (.mp4)</label>
+                    <input
+                      type="text"
+                      placeholder="https://..."
+                      value={siteConfig.heroVideoUrl}
+                      onChange={(e) => setSiteConfig({ ...siteConfig, heroVideoUrl: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 font-bold mb-1">AI Generated Image Asset</label>
+                    <input
+                      type="text"
+                      value={siteConfig.aiImageUrl}
+                      onChange={(e) => setSiteConfig({ ...siteConfig, aiImageUrl: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 font-bold mb-1">GIF Asset Library URL</label>
+                    <input
+                      type="text"
+                      value={siteConfig.gifLibraryUrl}
+                      onChange={(e) => setSiteConfig({ ...siteConfig, gifLibraryUrl: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white font-mono"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-slate-300 font-bold mb-1">Lottie Animation JSON URL</label>
+                    <input
+                      type="text"
+                      value={siteConfig.lottieAnimationUrl}
+                      onChange={(e) => setSiteConfig({ ...siteConfig, lottieAnimationUrl: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white font-mono"
+                    />
+                  </div>
+                </div>
+              </GlassCard>
+
+              {/* COLORS & GRADIENTS */}
+              <GlassCard hoverEffect={false} className="space-y-4">
+                <h3 className="text-base font-bold text-[#00FF99] flex items-center gap-2">
+                  <Palette className="w-5 h-5" /> Colors, Gradients & Theme Palettes
+                </h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+                  <div>
+                    <label className="block text-slate-300 font-bold mb-1">Neon Accent</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={siteConfig.primaryColor}
+                        onChange={(e) => setSiteConfig({ ...siteConfig, primaryColor: e.target.value })}
+                        className="w-8 h-8 rounded border-none bg-transparent cursor-pointer"
+                      />
+                      <span className="font-mono text-slate-300">{siteConfig.primaryColor}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 font-bold mb-1">Secondary Cyan</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={siteConfig.secondaryColor}
+                        onChange={(e) => setSiteConfig({ ...siteConfig, secondaryColor: e.target.value })}
+                        className="w-8 h-8 rounded border-none bg-transparent cursor-pointer"
+                      />
+                      <span className="font-mono text-slate-300">{siteConfig.secondaryColor}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 font-bold mb-1">Accent Pink</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={siteConfig.accentColor}
+                        onChange={(e) => setSiteConfig({ ...siteConfig, accentColor: e.target.value })}
+                        className="w-8 h-8 rounded border-none bg-transparent cursor-pointer"
+                      />
+                      <span className="font-mono text-slate-300">{siteConfig.accentColor}</span>
+                    </div>
+                  </div>
+                </div>
+              </GlassCard>
+
+              {/* TYPOGRAPHY & BUTTON SHAPES */}
+              <GlassCard hoverEffect={false} className="space-y-4">
+                <h3 className="text-base font-bold text-[#00E5FF] flex items-center gap-2">
+                  <Type className="w-5 h-5" /> Typography, Font, Card Blur & Button Shapes
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                  <div>
+                    <label className="block text-slate-300 font-bold mb-1">Font Family</label>
+                    <select
+                      value={siteConfig.fontFamily}
+                      onChange={(e) => setSiteConfig({ ...siteConfig, fontFamily: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl glass-panel text-white bg-slate-900"
+                    >
+                      <option value="Inter">Inter (Default)</option>
+                      <option value="Roboto">Roboto</option>
+                      <option value="Outfit">Outfit</option>
+                      <option value="System UI">System UI</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 font-bold mb-1">Card Glass Blur</label>
+                    <select
+                      value={siteConfig.cardBlur}
+                      onChange={(e) => setSiteConfig({ ...siteConfig, cardBlur: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl glass-panel text-white bg-slate-900"
+                    >
+                      <option value="12px">12px Subtle</option>
+                      <option value="24px">24px VisionOS (Default)</option>
+                      <option value="32px">32px Ultra Blur</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 font-bold mb-1">Button Shape</label>
+                    <select
+                      value={siteConfig.buttonStyle}
+                      onChange={(e) => setSiteConfig({ ...siteConfig, buttonStyle: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl glass-panel text-white bg-slate-900"
+                    >
+                      <option value="rounded-full">Pill (rounded-full)</option>
+                      <option value="rounded-2xl">Modern (rounded-2xl)</option>
+                      <option value="rounded-xl">Classic (rounded-xl)</option>
+                    </select>
+                  </div>
+                </div>
+              </GlassCard>
+
+              {/* HOMEPAGE SECTIONS TOGGLE */}
+              <GlassCard hoverEffect={false} className="space-y-4">
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <Sliders className="w-5 h-5 text-[#00FF99]" /> Homepage Sections Toggle & Reorder
+                </h3>
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <label className="flex items-center gap-2 cursor-pointer p-2.5 rounded-xl glass-panel">
+                    <input
+                      type="checkbox"
+                      checked={siteConfig.showHeroSection}
+                      onChange={(e) => setSiteConfig({ ...siteConfig, showHeroSection: e.target.checked })}
+                      className="accent-[#00FF99] w-4 h-4"
+                    />
+                    <span className="text-white font-semibold">Hero Header Section</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer p-2.5 rounded-xl glass-panel">
+                    <input
+                      type="checkbox"
+                      checked={siteConfig.showStatsSection}
+                      onChange={(e) => setSiteConfig({ ...siteConfig, showStatsSection: e.target.checked })}
+                      className="accent-[#00FF99] w-4 h-4"
+                    />
+                    <span className="text-white font-semibold">Counter Stats Bar</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer p-2.5 rounded-xl glass-panel">
+                    <input
+                      type="checkbox"
+                      checked={siteConfig.showTrendingSection}
+                      onChange={(e) => setSiteConfig({ ...siteConfig, showTrendingSection: e.target.checked })}
+                      className="accent-[#00FF99] w-4 h-4"
+                    />
+                    <span className="text-white font-semibold">Trending Calculators</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer p-2.5 rounded-xl glass-panel">
+                    <input
+                      type="checkbox"
+                      checked={siteConfig.showFeaturesSection}
+                      onChange={(e) => setSiteConfig({ ...siteConfig, showFeaturesSection: e.target.checked })}
+                      className="accent-[#00FF99] w-4 h-4"
+                    />
+                    <span className="text-white font-semibold">Features Overview</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer p-2.5 rounded-xl glass-panel">
+                    <input
+                      type="checkbox"
+                      checked={siteConfig.showBlogSection}
+                      onChange={(e) => setSiteConfig({ ...siteConfig, showBlogSection: e.target.checked })}
+                      className="accent-[#00FF99] w-4 h-4"
+                    />
+                    <span className="text-white font-semibold">Knowledge Articles</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer p-2.5 rounded-xl glass-panel">
+                    <input
+                      type="checkbox"
+                      checked={siteConfig.showFaqSection}
+                      onChange={(e) => setSiteConfig({ ...siteConfig, showFaqSection: e.target.checked })}
+                      className="accent-[#00FF99] w-4 h-4"
+                    />
+                    <span className="text-white font-semibold">FAQ Accordion</span>
+                  </label>
+                </div>
+              </GlassCard>
+
               <button
                 onClick={handleSaveCustomizer}
                 className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-[#00FF99] text-black font-black text-sm uppercase tracking-wider hover:opacity-95 transition-all shadow-xl flex items-center justify-center gap-2"
@@ -936,7 +956,55 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* PAGE CMS */}
+      {/* TAB: ANALYTICS (WITH RESET ANALYTICS FEATURE) */}
+      {activeTab === 'analytics' && (
+        <div className="space-y-8">
+          <div className="flex items-center justify-between glass-panel p-4 rounded-2xl border border-slate-800">
+            <div>
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <BarChart2 className="w-5 h-5 text-[#00FF99]" /> System Real-time Telemetry Analytics
+              </h3>
+              <p className="text-xs text-slate-400">Calculation engine usage metrics, conversions, and regional distribution</p>
+            </div>
+            <button
+              onClick={handleResetAnalytics}
+              className="px-4 py-2 rounded-xl bg-red-600/20 text-red-400 hover:bg-red-600 hover:text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md"
+            >
+              <RotateCcw className="w-4 h-4" /> Reset Analytics (Fresh Baseline)
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <GlassCard hoverEffect={false}>
+              <div className="text-xs font-bold text-slate-400 uppercase">Top Calculator Engine</div>
+              <div className="text-2xl font-black text-[#00FF99] mt-1">{analyticsData.topEngine}</div>
+              <div className="text-[11px] text-slate-500 mt-1">{analyticsData.topEngineCount} calculations logged</div>
+            </GlassCard>
+            <GlassCard hoverEffect={false}>
+              <div className="text-xs font-bold text-slate-400 uppercase">Lead Conversions</div>
+              <div className="text-2xl font-black text-[#00E5FF] mt-1">{analyticsData.conversionRate}%</div>
+              <div className="text-[11px] text-slate-500 mt-1">Report download conversion rate</div>
+            </GlassCard>
+            <GlassCard hoverEffect={false}>
+              <div className="text-xs font-bold text-slate-400 uppercase">Total User Leads</div>
+              <div className="text-2xl font-black text-[#FF007A] mt-1">{analyticsData.totalLeads}</div>
+              <div className="text-[11px] text-slate-500 mt-1">Across 24 professional roles</div>
+            </GlassCard>
+            <GlassCard hoverEffect={false}>
+              <div className="text-xs font-bold text-slate-400 uppercase">Active Countries</div>
+              <div className="text-2xl font-black text-white mt-1">{analyticsData.activeCountries} Nations</div>
+              <div className="text-[11px] text-slate-500 mt-1">Global user reach</div>
+            </GlassCard>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <ChartView data={analyticsData.topCalculatorsChart} title="Most Used Calculator Engines (30 Days)" />
+            <ChartView data={analyticsData.conversionsChart} title="Report Downloads & Lead Conversions Trend" />
+          </div>
+        </div>
+      )}
+
+      {/* TAB: PAGE CMS */}
       {activeTab === 'pagecms' && (
         <GlassCard hoverEffect={false} className="space-y-6">
           <h3 className="text-lg font-bold text-white flex items-center gap-2">
@@ -969,7 +1037,7 @@ export default function AdminDashboardPage() {
         </GlassCard>
       )}
 
-      {/* REPORT LOGS */}
+      {/* TAB: REPORT LOGS */}
       {activeTab === 'reports' && (
         <GlassCard hoverEffect={false} className="space-y-6">
           <div className="flex items-center justify-between">
@@ -1024,7 +1092,7 @@ export default function AdminDashboardPage() {
         </GlassCard>
       )}
 
-      {/* BLOG CMS */}
+      {/* TAB: BLOG CMS */}
       {activeTab === 'blogs' && (
         <GlassCard hoverEffect={false} className="space-y-6">
           <div className="flex items-center justify-between">
@@ -1067,7 +1135,7 @@ export default function AdminDashboardPage() {
         </GlassCard>
       )}
 
-      {/* MEDIA LIBRARY */}
+      {/* TAB: MEDIA LIBRARY */}
       {activeTab === 'media' && (
         <GlassCard hoverEffect={false} className="space-y-6">
           <h3 className="text-lg font-bold text-white flex items-center gap-2">
@@ -1084,7 +1152,7 @@ export default function AdminDashboardPage() {
         </GlassCard>
       )}
 
-      {/* MESSAGES */}
+      {/* TAB: MESSAGES */}
       {activeTab === 'messages' && (
         <GlassCard hoverEffect={false} className="space-y-6">
           <h3 className="text-lg font-bold text-white">Contact Messages ({messages.length})</h3>
@@ -1099,7 +1167,7 @@ export default function AdminDashboardPage() {
         </GlassCard>
       )}
 
-      {/* LOGS */}
+      {/* TAB: LOGS */}
       {activeTab === 'logs' && (
         <GlassCard hoverEffect={false} className="space-y-6">
           <h3 className="text-lg font-bold text-white">Security & Audit Logs</h3>
@@ -1115,7 +1183,7 @@ export default function AdminDashboardPage() {
         </GlassCard>
       )}
 
-      {/* USERS */}
+      {/* TAB: USERS */}
       {activeTab === 'users' && (
         <GlassCard hoverEffect={false} className="space-y-6">
           <h3 className="text-lg font-bold text-white">User Directory ({users.length})</h3>
@@ -1144,6 +1212,190 @@ export default function AdminDashboardPage() {
         </GlassCard>
       )}
 
+      {/* TAB: CREDENTIALS & 2FA SYSTEM */}
+      {activeTab === 'settings' && (
+        <div className="space-y-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="lg:col-span-6 space-y-6">
+              <GlassCard hoverEffect={false} className="space-y-4 border-[#00FF99]/40">
+                <h3 className="text-base font-bold text-[#00FF99] flex items-center gap-2">
+                  <Key className="w-5 h-5" /> Change Admin Login Credentials
+                </h3>
+                <form onSubmit={handleChangeCredentials} className="space-y-3 text-xs">
+                  <div>
+                    <label className="block text-slate-300 font-bold mb-1">Admin Email Address</label>
+                    <input
+                      type="email"
+                      required
+                      value={credForm.newEmail}
+                      onChange={(e) => setCredForm({ ...credForm, newEmail: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 font-bold mb-1">New Password (Leave blank to keep current)</label>
+                    <input
+                      type="password"
+                      placeholder="Enter new strong password"
+                      value={credForm.newPassword}
+                      onChange={(e) => setCredForm({ ...credForm, newPassword: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 font-bold mb-1">Confirm New Password</label>
+                    <input
+                      type="password"
+                      placeholder="Re-enter new password"
+                      value={credForm.confirmPassword}
+                      onChange={(e) => setCredForm({ ...credForm, confirmPassword: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white font-mono"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-[#00FF99] text-black font-extrabold uppercase tracking-wider transition-all shadow-md mt-2"
+                  >
+                    Update Admin Credentials
+                  </button>
+                </form>
+              </GlassCard>
+
+              <GlassCard hoverEffect={false} className="space-y-4">
+                <h3 className="text-base font-bold text-[#00E5FF] flex items-center gap-2">
+                  <Settings className="w-5 h-5" /> Infrastructure & Server Configuration
+                </h3>
+                <form onSubmit={handleSaveSystemSettings} className="space-y-3 text-xs">
+                  <div>
+                    <label className="block text-slate-400 font-mono mb-1">SITE NAME</label>
+                    <input
+                      type="text"
+                      value={systemSettings.siteName}
+                      onChange={(e) => setSystemSettings({ ...systemSettings, siteName: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-400 font-mono mb-1">MONGODB ATLAS CONNECTION URI</label>
+                    <input
+                      type="password"
+                      value={systemSettings.mongoUri}
+                      onChange={(e) => setSystemSettings({ ...systemSettings, mongoUri: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white font-mono"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold uppercase tracking-wider"
+                  >
+                    Save Server Infrastructure
+                  </button>
+                </form>
+              </GlassCard>
+            </div>
+
+            <div className="lg:col-span-6 space-y-6">
+              <GlassCard hoverEffect={false} className="space-y-5 border-[#FF007A]/40">
+                <h3 className="text-base font-bold text-[#FF007A] flex items-center gap-2">
+                  <ShieldAlert className="w-5 h-5" /> Multi-Factor Security & 2FA Authentication
+                </h3>
+                <div className="p-4 rounded-2xl glass-panel border border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Smartphone className="w-5 h-5 text-[#00FF99]" />
+                      <div>
+                        <div className="text-xs font-bold text-white">Google Authenticator (TOTP 2FA)</div>
+                        <div className="text-[11px] text-slate-400">Time-based one-time passwords via 2FA apps</div>
+                      </div>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={twoFactorConfig.totpEnabled}
+                        onChange={(e) =>
+                          handleSave2FA({ ...twoFactorConfig, totpEnabled: e.target.checked })
+                        }
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00FF99]" />
+                    </label>
+                  </div>
+                  {twoFactorConfig.totpEnabled && (
+                    <div className="pt-2 flex items-center justify-between border-t border-slate-800 text-xs">
+                      <span className="font-mono text-slate-400">Secret: {twoFactorConfig.secretKey}</span>
+                      <button
+                        onClick={() => setShowQrModal(true)}
+                        className="px-3 py-1 rounded-lg bg-emerald-500/20 text-[#00FF99] font-bold flex items-center gap-1"
+                      >
+                        <QrCode className="w-3.5 h-3.5" /> Setup QR Code
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-4 rounded-2xl glass-panel border border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <MessageSquare className="w-5 h-5 text-[#00E5FF]" />
+                      <div>
+                        <div className="text-xs font-bold text-white">SMS & WhatsApp Message Auth</div>
+                        <div className="text-[11px] text-slate-400">Receive 6-digit OTP codes via mobile SMS</div>
+                      </div>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={twoFactorConfig.smsEnabled}
+                        onChange={(e) =>
+                          handleSave2FA({ ...twoFactorConfig, smsEnabled: e.target.checked })
+                        }
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00E5FF]" />
+                    </label>
+                  </div>
+                  {twoFactorConfig.smsEnabled && (
+                    <div className="pt-2 text-xs space-y-1">
+                      <label className="block text-slate-400">Registered Phone Number</label>
+                      <input
+                        type="text"
+                        value={twoFactorConfig.phoneNumber}
+                        onChange={(e) =>
+                          handleSave2FA({ ...twoFactorConfig, phoneNumber: e.target.value })
+                        }
+                        className="w-full px-3 py-1.5 rounded-xl glass-panel text-white font-mono"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-4 rounded-2xl glass-panel border border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-xs font-bold text-white">Emergency Backup Recovery Codes</div>
+                      <div className="text-[11px] text-slate-400">Single-use codes for emergency access</div>
+                    </div>
+                    <button
+                      onClick={handleGenerateBackupCodes}
+                      className="px-3 py-1.5 rounded-xl bg-pink-600/20 text-pink-400 hover:bg-pink-600 hover:text-white text-xs font-bold transition-colors"
+                    >
+                      Generate New Codes
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-[11px] font-mono text-slate-300 bg-slate-950 p-3 rounded-xl border border-slate-800">
+                    {twoFactorConfig.backupCodes.map((code, idx) => (
+                      <div key={idx} className="flex items-center gap-1">
+                        <span className="text-slate-500">{idx + 1}.</span> {code}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </GlassCard>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* QR MODAL */}
       <GlassModal isOpen={showQrModal} onClose={() => setShowQrModal(false)} title="Setup Google Authenticator 2FA">
         <div className="text-center space-y-4 py-4 text-xs">
@@ -1156,13 +1408,58 @@ export default function AdminDashboardPage() {
             />
           </div>
           <div className="font-mono text-slate-400">Secret Key: {twoFactorConfig.secretKey}</div>
-          <button
-            onClick={() => setShowQrModal(false)}
-            className="px-6 py-2 rounded-xl bg-[#00FF99] text-black font-bold uppercase"
-          >
+          <button onClick={() => setShowQrModal(false)} className="px-6 py-2 rounded-xl bg-[#00FF99] text-black font-bold uppercase">
             Done Setting Up
           </button>
         </div>
+      </GlassModal>
+
+      {/* OTHER MODALS */}
+      <GlassModal isOpen={blogModalOpen} onClose={() => setBlogModalOpen(false)} title={editingPost ? 'Edit Blog Article' : 'Create New Blog Post'}>
+        <form onSubmit={handleSaveBlogPost} className="space-y-4 text-xs">
+          <div>
+            <label className="block text-slate-300 font-bold mb-1">Article Title *</label>
+            <input type="text" required value={blogForm.title} onChange={(e) => setBlogForm({ ...blogForm, title: e.target.value })} className="w-full px-3.5 py-2.5 rounded-xl glass-panel text-white font-bold" />
+          </div>
+          <div className="pt-3 flex items-center justify-end gap-3">
+            <button type="button" onClick={() => setBlogModalOpen(false)} className="px-4 py-2 rounded-xl glass-panel text-slate-300">Cancel</button>
+            <button type="submit" className="px-6 py-2.5 rounded-xl bg-[#00FF99] text-black font-bold uppercase tracking-wider">{editingPost ? 'Save Changes' : 'Publish Post'}</button>
+          </div>
+        </form>
+      </GlassModal>
+
+      <GlassModal isOpen={mediaModalOpen} onClose={() => setMediaModalOpen(false)} title="Upload File to Media Library">
+        <form onSubmit={handleSaveMediaItem} className="space-y-4 text-xs">
+          <div>
+            <label className="block text-slate-300 font-bold mb-1">File Name *</label>
+            <input type="text" required value={mediaForm.name} onChange={(e) => setMediaForm({ ...mediaForm, name: e.target.value })} className="w-full px-3.5 py-2.5 rounded-xl glass-panel text-white" />
+          </div>
+          <div className="pt-3 flex items-center justify-end gap-3">
+            <button type="button" onClick={() => setMediaModalOpen(false)} className="px-4 py-2 rounded-xl glass-panel text-slate-300">Cancel</button>
+            <button type="submit" className="px-6 py-2.5 rounded-xl bg-pink-600 text-white font-bold uppercase tracking-wider">Save to Library</button>
+          </div>
+        </form>
+      </GlassModal>
+
+      <GlassModal isOpen={replyModalOpen} onClose={() => setReplyModalOpen(false)} title={`Reply to ${replyingMessage?.name || 'Inquiry'}`}>
+        <form onSubmit={handleSendReply} className="space-y-4 text-xs">
+          <textarea rows={6} required value={replyText} onChange={(e) => setReplyText(e.target.value)} className="w-full px-3.5 py-2.5 rounded-xl glass-panel text-white" />
+          <div className="pt-3 flex items-center justify-end gap-3">
+            <button type="button" onClick={() => setReplyModalOpen(false)} className="px-4 py-2 rounded-xl glass-panel text-slate-300">Cancel</button>
+            <button type="submit" className="px-6 py-2.5 rounded-xl bg-[#00FF99] text-black font-bold uppercase tracking-wider flex items-center gap-1.5"><Send className="w-4 h-4" /> Send Email Response</button>
+          </div>
+        </form>
+      </GlassModal>
+
+      <GlassModal isOpen={viewReportModalOpen} onClose={() => setViewReportModalOpen(false)} title={`Report Details - ${selectedReport?.id || ''}`}>
+        {selectedReport && (
+          <div className="space-y-4 text-xs">
+            <div className="p-4 rounded-xl bg-emerald-500/10 border border-[#00FF99] text-emerald-400 font-mono space-y-1">
+              <div><strong className="text-white">Report ID:</strong> {selectedReport.id}</div>
+              <div><strong className="text-white">Verification Code:</strong> {selectedReport.code}</div>
+            </div>
+          </div>
+        )}
       </GlassModal>
     </div>
   );
