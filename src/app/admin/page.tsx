@@ -44,9 +44,12 @@ import {
   Quote,
   Code,
   Link as LinkIcon,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
+  RotateCcw,
+  Smartphone,
+  Key,
+  MessageSquare,
+  ShieldAlert,
+  QrCode,
 } from 'lucide-react';
 
 export default function AdminDashboardPage() {
@@ -76,23 +79,91 @@ export default function AdminDashboardPage() {
     showToast(`Exported ${filename} successfully!`);
   };
 
-  // Analytics Data
-  const topCalculatorsChart = [
-    { name: 'Molarity', value: 4250 },
-    { name: 'OEE', value: 3890 },
-    { name: 'Pasteurization', value: 3120 },
-    { name: 'Reynolds No.', value: 2780 },
-    { name: 'Density/Brix', value: 2450 },
-  ];
+  // ANALYTICS STATE (SUPPORT FRESH RESET)
+  const defaultAnalytics = {
+    topEngine: 'Molarity (M)',
+    topEngineCount: 4250,
+    conversionRate: 68.4,
+    totalLeads: 14890,
+    activeCountries: 42,
+    topCalculatorsChart: [
+      { name: 'Molarity', value: 4250 },
+      { name: 'OEE', value: 3890 },
+      { name: 'Pasteurization', value: 3120 },
+      { name: 'Reynolds No.', value: 2780 },
+      { name: 'Density/Brix', value: 2450 },
+    ],
+    conversionsChart: [
+      { name: 'Jan', value: 1240 },
+      { name: 'Feb', value: 1890 },
+      { name: 'Mar', value: 2400 },
+      { name: 'Apr', value: 3100 },
+      { name: 'May', value: 4200 },
+      { name: 'Jun', value: 5800 },
+    ],
+  };
 
-  const conversionsChart = [
-    { name: 'Jan', value: 1240 },
-    { name: 'Feb', value: 1890 },
-    { name: 'Mar', value: 2400 },
-    { name: 'Apr', value: 3100 },
-    { name: 'May', value: 4200 },
-    { name: 'Jun', value: 5800 },
-  ];
+  const [analyticsData, setAnalyticsData] = useState(defaultAnalytics);
+
+  const handleResetAnalytics = () => {
+    setAnalyticsData({
+      topEngine: 'None (Fresh Start)',
+      topEngineCount: 0,
+      conversionRate: 0.0,
+      totalLeads: 0,
+      activeCountries: 0,
+      topCalculatorsChart: [
+        { name: 'Molarity', value: 0 },
+        { name: 'OEE', value: 0 },
+        { name: 'Pasteurization', value: 0 },
+        { name: 'Reynolds No.', value: 0 },
+        { name: 'Density/Brix', value: 0 },
+      ],
+      conversionsChart: [
+        { name: 'Jan', value: 0 },
+        { name: 'Feb', value: 0 },
+        { name: 'Mar', value: 0 },
+        { name: 'Apr', value: 0 },
+        { name: 'May', value: 0 },
+        { name: 'Jun', value: 0 },
+      ],
+    });
+    showToast('Analytics Metrics Reset to Fresh Baseline (0 Calculations)!');
+  };
+
+  // ADMIN CREDENTIALS STATE & CHANGE HANDLER
+  const [adminCreds, setAdminCreds] = useState({
+    email: 'admin@industrialcalc.app',
+    password: 'Admin@2026',
+  });
+
+  const [credForm, setCredForm] = useState({
+    newEmail: 'admin@industrialcalc.app',
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+
+  // 2FA & MULTI-FACTOR SECURITY STATE
+  const [twoFactorConfig, setTwoFactorConfig] = useState({
+    totpEnabled: false,
+    smsEnabled: false,
+    emailOtpEnabled: true,
+    phoneNumber: '+1 555-0199',
+    secretKey: 'JBSWY3DPEHPK3PXP',
+    backupCodes: [
+      '8492-0194',
+      '7301-9482',
+      '1048-2938',
+      '9201-4829',
+      '5810-9122',
+      '3819-2049',
+      '7491-0294',
+      '6102-9481',
+    ],
+  });
+
+  const [showQrModal, setShowQrModal] = useState(false);
 
   // Users State
   const [users, setUsers] = useState([
@@ -196,64 +267,100 @@ export default function AdminDashboardPage() {
   const [pagesConfig, setPagesConfig] = useState<Record<string, { title: string; content: string }>>({
     privacy: {
       title: 'Privacy Policy',
-      content: `<h2>1. Data Collection Principles</h2><p>IndustrialCalc collects user lead information (name, work email, mobile number, professional role) exclusively when exporting calculation reports.</p><h2>2. Use of Information</h2><p>Your inputs and parameters remain private and are processed in client-side memory to compute engineering metrics.</p><h2>3. Compliance Standards</h2><p>We strictly adhere to ISO 27001 data security practices and GDPR compliance guidelines.</p>`,
+      content: `<h2>1. Data Collection Principles</h2><p>IndustrialCalc collects user lead information (name, work email, mobile number, professional role) exclusively when exporting calculation reports.</p><h2>2. Use of Information</h2><p>Your inputs and parameters remain private and are processed in client-side memory to compute engineering metrics.</p>`,
     },
     terms: {
       title: 'Terms of Service',
-      content: `<h2>1. Acceptance of Terms</h2><p>By accessing IndustrialCalc, you agree to comply with our terms of service for engineering calculations.</p><h2>2. Disclaimer of Warranty</h2><p>Calculations are provided for process guidance and verification purposes. Final engineering designs should be audited by certified plant engineers.</p>`,
+      content: `<h2>1. Acceptance of Terms</h2><p>By accessing IndustrialCalc, you agree to comply with our terms of service for engineering calculations.</p>`,
     },
     cookies: {
       title: 'Cookie Policy',
-      content: `<h2>1. Essential Cookies</h2><p>We use essential cookies and browser local storage to remember your visual theme preference (Light/Dark mode) and active calculation parameters.</p>`,
+      content: `<h2>1. Essential Cookies</h2><p>We use essential cookies and browser local storage to remember your visual theme preference.</p>`,
     },
     disclaimer: {
       title: 'Engineering Disclaimer',
-      content: `<h2>1. Professional Verification Required</h2><p>All calculations on IndustrialCalc are designed using validated mathematical models. However, users are advised to verify critical plant safety calculations with certified process engineers.</p>`,
+      content: `<h2>1. Professional Verification Required</h2><p>All calculations on IndustrialCalc are designed using validated mathematical models.</p>`,
     },
     about: {
       title: 'About IndustrialCalc',
-      content: `<h2>Next-Gen Process Engineering Suite</h2><p>IndustrialCalc provides 50 specialized calculation engines designed for Food Processing, Dairy Technology, Biotechnology, Chemical Engineering, and Plant Automation.</p>`,
+      content: `<h2>Next-Gen Process Engineering Suite</h2><p>IndustrialCalc provides 50 specialized calculation engines.</p>`,
     },
   });
 
-  const [editorPreviewMode, setEditorPreviewMode] = useState(false);
-
-  // Load persisted siteConfig & pagesConfig on mount
+  // Load persisted configs on mount
   useEffect(() => {
     const savedSite = localStorage.getItem('industrialcalc_siteConfig');
     if (savedSite) {
       try {
         setSiteConfig(JSON.parse(savedSite));
-      } catch (e) {
-        console.warn('Failed parsing siteConfig', e);
-      }
+      } catch (e) {}
     }
 
-    const savedPages = localStorage.getItem('industrialcalc_pagesConfig');
-    if (savedPages) {
+    const savedCreds = localStorage.getItem('industrialcalc_adminCreds');
+    if (savedCreds) {
       try {
-        setPagesConfig(JSON.parse(savedPages));
-      } catch (e) {
-        console.warn('Failed parsing pagesConfig', e);
-      }
+        const parsed = JSON.parse(savedCreds);
+        if (parsed.email && parsed.password) {
+          setAdminCreds(parsed);
+          setCredForm((prev) => ({ ...prev, newEmail: parsed.email }));
+        }
+      } catch (e) {}
+    }
+
+    const saved2FA = localStorage.getItem('industrialcalc_2faConfig');
+    if (saved2FA) {
+      try {
+        setTwoFactorConfig(JSON.parse(saved2FA));
+      } catch (e) {}
     }
   }, []);
 
-  // RICH TEXT TOOLBAR INSERTER
-  const insertRichTag = (prefix: string, suffix: string = '') => {
-    const currentPage = pagesConfig[selectedPage];
-    if (!currentPage) return;
-    const newContent = `${currentPage.content}\n${prefix}Sample Text${suffix}`;
-    setPagesConfig({
-      ...pagesConfig,
-      [selectedPage]: { ...currentPage, content: newContent },
-    });
+  // Save Admin Credentials
+  const handleChangeCredentials = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (credForm.newPassword && credForm.newPassword !== credForm.confirmPassword) {
+      showToast('Error: Passwords do not match!');
+      return;
+    }
+
+    const updated = {
+      email: credForm.newEmail,
+      password: credForm.newPassword ? credForm.newPassword : adminCreds.password,
+    };
+
+    setAdminCreds(updated);
+    localStorage.setItem('industrialcalc_adminCreds', JSON.stringify(updated));
+    showToast('Admin Credentials Updated Successfully! Use new email/password to sign in.');
+    setCredForm((prev) => ({ ...prev, currentPassword: '', newPassword: '', confirmPassword: '' }));
   };
 
-  // Save Page CMS
-  const handleSavePageCMS = () => {
-    localStorage.setItem('industrialcalc_pagesConfig', JSON.stringify(pagesConfig));
-    showToast(`Saved Rich Content for ${pagesConfig[selectedPage].title} Successfully!`);
+  // Save 2FA Settings
+  const handleSave2FA = (newConfig: typeof twoFactorConfig) => {
+    setTwoFactorConfig(newConfig);
+    localStorage.setItem('industrialcalc_2faConfig', JSON.stringify(newConfig));
+    showToast('Updated 2FA Multi-Factor Authentication Settings!');
+  };
+
+  // Generate Backup Codes
+  const handleGenerateBackupCodes = () => {
+    const codes = Array.from({ length: 8 }, () =>
+      Math.floor(1000 + Math.random() * 9000) + '-' + Math.floor(1000 + Math.random() * 9000)
+    );
+    const newConfig = { ...twoFactorConfig, backupCodes: codes };
+    handleSave2FA(newConfig);
+    showToast('Generated 8 New Emergency Backup Recovery Codes!');
+  };
+
+  // Save Customizer Config
+  const handleSaveCustomizer = () => {
+    localStorage.setItem('industrialcalc_siteConfig', JSON.stringify(siteConfig));
+    showToast('Saved Contact Details, Map Locations, Colors & Branding Settings!');
+  };
+
+  // Save System Config
+  const handleSaveSystemSettings = (e: React.FormEvent) => {
+    e.preventDefault();
+    showToast('System Infrastructure & API Settings Saved!');
   };
 
   // MODAL STATES
@@ -278,18 +385,6 @@ export default function AdminDashboardPage() {
 
   const [viewReportModalOpen, setViewReportModalOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState<any>(null);
-
-  // Save Customizer Config to LocalStorage
-  const handleSaveCustomizer = () => {
-    localStorage.setItem('industrialcalc_siteConfig', JSON.stringify(siteConfig));
-    showToast('Saved Contact Details, Map Locations, Colors & Branding Settings!');
-  };
-
-  // Save System Config
-  const handleSaveSystemSettings = (e: React.FormEvent) => {
-    e.preventDefault();
-    showToast('System Infrastructure & API Settings Saved!');
-  };
 
   // Blog Handlers
   const handleOpenBlogModal = (post?: any) => {
@@ -325,11 +420,7 @@ export default function AdminDashboardPage() {
 
     if (editingPost) {
       setBlogPosts(
-        blogPosts.map((p) =>
-          p.id === editingPost.id
-            ? { ...p, ...blogForm }
-            : p
-        )
+        blogPosts.map((p) => (p.id === editingPost.id ? { ...p, ...blogForm } : p))
       );
       showToast(`Updated article "${blogForm.title}" successfully!`);
     } else {
@@ -381,9 +472,7 @@ export default function AdminDashboardPage() {
     e.preventDefault();
     if (replyingMessage) {
       setMessages(
-        messages.map((m) =>
-          m.id === replyingMessage.id ? { ...m, status: 'Replied' } : m
-        )
+        messages.map((m) => (m.id === replyingMessage.id ? { ...m, status: 'Replied' } : m))
       );
       showToast(`Sent response to ${replyingMessage.email}!`);
       setReplyModalOpen(false);
@@ -402,9 +491,7 @@ export default function AdminDashboardPage() {
 
   const toggleUserBlock = (id: number) => {
     setUsers(
-      users.map((u) =>
-        u.id === id ? { ...u, status: u.status === 'Active' ? 'Blocked' : 'Active' } : u
-      )
+      users.map((u) => (u.id === id ? { ...u, status: u.status === 'Active' ? 'Blocked' : 'Active' } : u))
     );
     showToast('User status updated.');
   };
@@ -431,7 +518,9 @@ export default function AdminDashboardPage() {
           </div>
           <div>
             <h1 className="text-2xl font-black text-slate-900 dark:text-white">Admin Control Suite</h1>
-            <p className="text-xs text-slate-400">Manage Site Contact Details, Page CMS Rich Editor, Branding, CMS & Telemetry</p>
+            <p className="text-xs text-slate-400">
+              Manage Credentials, 2FA Security, Site Customizer, Analytics Reset, CMS & Telemetry
+            </p>
           </div>
         </div>
 
@@ -456,6 +545,7 @@ export default function AdminDashboardPage() {
       <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
         {[
           { id: 'customizer', label: 'Site & Theme Customizer', icon: Sliders },
+          { id: 'analytics', label: 'Analytics', icon: BarChart2 },
           { id: 'pagecms', label: 'Page CMS (Rich Editor)', icon: FileCode },
           { id: 'reports', label: 'Report Logs', icon: FileSpreadsheet },
           { id: 'blogs', label: 'Blog CMS', icon: Newspaper },
@@ -463,8 +553,7 @@ export default function AdminDashboardPage() {
           { id: 'messages', label: 'Contact Messages', icon: Mail },
           { id: 'logs', label: 'Security Logs', icon: Lock },
           { id: 'users', label: 'User Directory', icon: Users },
-          { id: 'analytics', label: 'Analytics', icon: BarChart2 },
-          { id: 'settings', label: 'System Config', icon: Settings },
+          { id: 'settings', label: 'Credentials & 2FA System', icon: Settings },
         ].map((tab) => {
           const Icon = tab.icon;
           return (
@@ -483,11 +572,305 @@ export default function AdminDashboardPage() {
         })}
       </div>
 
-      {/* TAB 1: SITE & THEME CUSTOMIZER */}
+      {/* TAB: ANALYTICS (WITH RESET ANALYTICS FEATURE) */}
+      {activeTab === 'analytics' && (
+        <div className="space-y-8">
+          <div className="flex items-center justify-between glass-panel p-4 rounded-2xl border border-slate-800">
+            <div>
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <BarChart2 className="w-5 h-5 text-[#00FF99]" /> System Real-time Telemetry Analytics
+              </h3>
+              <p className="text-xs text-slate-400">Calculation engine usage metrics, conversions, and regional distribution</p>
+            </div>
+            <button
+              onClick={handleResetAnalytics}
+              className="px-4 py-2 rounded-xl bg-red-600/20 text-red-400 hover:bg-red-600 hover:text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md"
+            >
+              <RotateCcw className="w-4 h-4" /> Reset Analytics (Fresh Baseline)
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <GlassCard hoverEffect={false}>
+              <div className="text-xs font-bold text-slate-400 uppercase">Top Calculator Engine</div>
+              <div className="text-2xl font-black text-[#00FF99] mt-1">{analyticsData.topEngine}</div>
+              <div className="text-[11px] text-slate-500 mt-1">{analyticsData.topEngineCount} calculations logged</div>
+            </GlassCard>
+            <GlassCard hoverEffect={false}>
+              <div className="text-xs font-bold text-slate-400 uppercase">Lead Conversions</div>
+              <div className="text-2xl font-black text-[#00E5FF] mt-1">{analyticsData.conversionRate}%</div>
+              <div className="text-[11px] text-slate-500 mt-1">Report download conversion rate</div>
+            </GlassCard>
+            <GlassCard hoverEffect={false}>
+              <div className="text-xs font-bold text-slate-400 uppercase">Total User Leads</div>
+              <div className="text-2xl font-black text-[#FF007A] mt-1">{analyticsData.totalLeads}</div>
+              <div className="text-[11px] text-slate-500 mt-1">Across 24 professional roles</div>
+            </GlassCard>
+            <GlassCard hoverEffect={false}>
+              <div className="text-xs font-bold text-slate-400 uppercase">Active Countries</div>
+              <div className="text-2xl font-black text-white mt-1">{analyticsData.activeCountries} Nations</div>
+              <div className="text-[11px] text-slate-500 mt-1">Global user reach</div>
+            </GlassCard>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <ChartView data={analyticsData.topCalculatorsChart} title="Most Used Calculator Engines (30 Days)" />
+            <ChartView data={analyticsData.conversionsChart} title="Report Downloads & Lead Conversions Trend" />
+          </div>
+        </div>
+      )}
+
+      {/* TAB: SYSTEM CONFIG, CREDENTIALS & 2FA AUTHENTICATION */}
+      {activeTab === 'settings' && (
+        <div className="space-y-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* LEFT COL: CHANGE CREDENTIALS & SYSTEM CONFIG */}
+            <div className="lg:col-span-6 space-y-6">
+              {/* CHANGE ADMIN CREDENTIALS CARD */}
+              <GlassCard hoverEffect={false} className="space-y-4 border-[#00FF99]/40">
+                <h3 className="text-base font-bold text-[#00FF99] flex items-center gap-2">
+                  <Key className="w-5 h-5" /> Change Admin Login Credentials
+                </h3>
+                <form onSubmit={handleChangeCredentials} className="space-y-3 text-xs">
+                  <div>
+                    <label className="block text-slate-300 font-bold mb-1">Admin Email Address</label>
+                    <input
+                      type="email"
+                      required
+                      value={credForm.newEmail}
+                      onChange={(e) => setCredForm({ ...credForm, newEmail: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white font-mono"
+                    />
+                  </div>
+
+                  <div className="pt-1">
+                    <label className="block text-slate-300 font-bold mb-1">New Password (Leave blank to keep current)</label>
+                    <input
+                      type="password"
+                      placeholder="Enter new strong password"
+                      value={credForm.newPassword}
+                      onChange={(e) => setCredForm({ ...credForm, newPassword: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white font-mono"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-300 font-bold mb-1">Confirm New Password</label>
+                    <input
+                      type="password"
+                      placeholder="Re-enter new password"
+                      value={credForm.confirmPassword}
+                      onChange={(e) => setCredForm({ ...credForm, confirmPassword: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white font-mono"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-[#00FF99] text-black font-extrabold uppercase tracking-wider transition-all shadow-md mt-2"
+                  >
+                    Update Admin Credentials
+                  </button>
+                </form>
+              </GlassCard>
+
+              {/* SYSTEM CONFIG CARD */}
+              <GlassCard hoverEffect={false} className="space-y-4">
+                <h3 className="text-base font-bold text-[#00E5FF] flex items-center gap-2">
+                  <Settings className="w-5 h-5" /> Infrastructure & Server Configuration
+                </h3>
+
+                <form onSubmit={handleSaveSystemSettings} className="space-y-3 text-xs">
+                  <div>
+                    <label className="block text-slate-400 font-mono mb-1">SITE NAME</label>
+                    <input
+                      type="text"
+                      value={systemSettings.siteName}
+                      onChange={(e) => setSystemSettings({ ...systemSettings, siteName: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-400 font-mono mb-1">MONGODB ATLAS CONNECTION URI</label>
+                    <input
+                      type="password"
+                      value={systemSettings.mongoUri}
+                      onChange={(e) => setSystemSettings({ ...systemSettings, mongoUri: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white font-mono"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-slate-400 font-mono mb-1">JWT SECRET</label>
+                      <input
+                        type="password"
+                        value={systemSettings.jwtSecret}
+                        onChange={(e) => setSystemSettings({ ...systemSettings, jwtSecret: e.target.value })}
+                        className="w-full px-3.5 py-2 rounded-xl glass-panel text-white font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-400 font-mono mb-1">SMTP HOST</label>
+                      <input
+                        type="text"
+                        value={systemSettings.smtpHost}
+                        onChange={(e) => setSystemSettings({ ...systemSettings, smtpHost: e.target.value })}
+                        className="w-full px-3.5 py-2 rounded-xl glass-panel text-white"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold uppercase tracking-wider transition-all"
+                  >
+                    Save Server Infrastructure
+                  </button>
+                </form>
+              </GlassCard>
+            </div>
+
+            {/* RIGHT COL: 2FA & MULTI-FACTOR SECURITY MANAGER */}
+            <div className="lg:col-span-6 space-y-6">
+              <GlassCard hoverEffect={false} className="space-y-5 border-[#FF007A]/40">
+                <h3 className="text-base font-bold text-[#FF007A] flex items-center gap-2">
+                  <ShieldAlert className="w-5 h-5" /> Multi-Factor Security & 2FA Authentication
+                </h3>
+
+                {/* TOTP 2FA GOOGLE AUTHENTICATOR */}
+                <div className="p-4 rounded-2xl glass-panel border border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Smartphone className="w-5 h-5 text-[#00FF99]" />
+                      <div>
+                        <div className="text-xs font-bold text-white">Google Authenticator (TOTP 2FA)</div>
+                        <div className="text-[11px] text-slate-400">Time-based one-time passwords via 2FA apps</div>
+                      </div>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={twoFactorConfig.totpEnabled}
+                        onChange={(e) =>
+                          handleSave2FA({ ...twoFactorConfig, totpEnabled: e.target.checked })
+                        }
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00FF99]" />
+                    </label>
+                  </div>
+
+                  {twoFactorConfig.totpEnabled && (
+                    <div className="pt-2 flex items-center justify-between border-t border-slate-800 text-xs">
+                      <span className="font-mono text-slate-400">Secret: {twoFactorConfig.secretKey}</span>
+                      <button
+                        onClick={() => setShowQrModal(true)}
+                        className="px-3 py-1 rounded-lg bg-emerald-500/20 text-[#00FF99] font-bold flex items-center gap-1"
+                      >
+                        <QrCode className="w-3.5 h-3.5" /> Setup QR Code
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* SMS & WHATSAPP AUTHENTICATION */}
+                <div className="p-4 rounded-2xl glass-panel border border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <MessageSquare className="w-5 h-5 text-[#00E5FF]" />
+                      <div>
+                        <div className="text-xs font-bold text-white">SMS & WhatsApp Message Auth</div>
+                        <div className="text-[11px] text-slate-400">Receive 6-digit OTP codes via mobile SMS</div>
+                      </div>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={twoFactorConfig.smsEnabled}
+                        onChange={(e) =>
+                          handleSave2FA({ ...twoFactorConfig, smsEnabled: e.target.checked })
+                        }
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00E5FF]" />
+                    </label>
+                  </div>
+
+                  {twoFactorConfig.smsEnabled && (
+                    <div className="pt-2 text-xs space-y-1">
+                      <label className="block text-slate-400">Registered Phone Number</label>
+                      <input
+                        type="text"
+                        value={twoFactorConfig.phoneNumber}
+                        onChange={(e) =>
+                          handleSave2FA({ ...twoFactorConfig, phoneNumber: e.target.value })
+                        }
+                        className="w-full px-3 py-1.5 rounded-xl glass-panel text-white font-mono"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* EMAIL OTP CODE AUTHENTICATION */}
+                <div className="p-4 rounded-2xl glass-panel border border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-5 h-5 text-pink-400" />
+                      <div>
+                        <div className="text-xs font-bold text-white">Email OTP Verification Code</div>
+                        <div className="text-[11px] text-slate-400">Send authentication code to admin email</div>
+                      </div>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={twoFactorConfig.emailOtpEnabled}
+                        onChange={(e) =>
+                          handleSave2FA({ ...twoFactorConfig, emailOtpEnabled: e.target.checked })
+                        }
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-500" />
+                    </label>
+                  </div>
+                </div>
+
+                {/* EMERGENCY RECOVERY CODES */}
+                <div className="p-4 rounded-2xl glass-panel border border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-xs font-bold text-white">Emergency Backup Recovery Codes</div>
+                      <div className="text-[11px] text-slate-400">Single-use codes for emergency access</div>
+                    </div>
+                    <button
+                      onClick={handleGenerateBackupCodes}
+                      className="px-3 py-1.5 rounded-xl bg-pink-600/20 text-pink-400 hover:bg-pink-600 hover:text-white text-xs font-bold transition-colors"
+                    >
+                      Generate New Codes
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-[11px] font-mono text-slate-300 bg-slate-950 p-3 rounded-xl border border-slate-800">
+                    {twoFactorConfig.backupCodes.map((code, idx) => (
+                      <div key={idx} className="flex items-center gap-1">
+                        <span className="text-slate-500">{idx + 1}.</span> {code}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </GlassCard>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* OTHER TABS */}
+      {/* SITE & THEME CUSTOMIZER */}
       {activeTab === 'customizer' && (
         <div className="space-y-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Left Col */}
             <div className="lg:col-span-6 space-y-6">
               <GlassCard hoverEffect={false} className="space-y-4 border-[#00FF99]/40">
                 <h3 className="text-base font-bold text-[#00FF99] flex items-center gap-2">
@@ -540,133 +923,8 @@ export default function AdminDashboardPage() {
                   </div>
                 </div>
               </GlassCard>
-
-              <GlassCard hoverEffect={false} className="space-y-4">
-                <h3 className="text-base font-bold text-[#00E5FF] flex items-center gap-2">
-                  <ImageIcon className="w-5 h-5" /> Logo, Favicon & Site Identity
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                  <div>
-                    <label className="block text-slate-300 font-bold mb-1">Website Name</label>
-                    <input
-                      type="text"
-                      value={siteConfig.websiteName}
-                      onChange={(e) => setSiteConfig({ ...siteConfig, websiteName: e.target.value })}
-                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-slate-300 font-bold mb-1">Slogan / Subtitle</label>
-                    <input
-                      type="text"
-                      value={siteConfig.slogan}
-                      onChange={(e) => setSiteConfig({ ...siteConfig, slogan: e.target.value })}
-                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-slate-300 font-bold mb-1">Logo Image URL</label>
-                    <input
-                      type="text"
-                      value={siteConfig.logoUrl}
-                      onChange={(e) => setSiteConfig({ ...siteConfig, logoUrl: e.target.value })}
-                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white font-mono"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-slate-300 font-bold mb-1">Favicon URL</label>
-                    <input
-                      type="text"
-                      value={siteConfig.faviconUrl}
-                      onChange={(e) => setSiteConfig({ ...siteConfig, faviconUrl: e.target.value })}
-                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white font-mono"
-                    />
-                  </div>
-                </div>
-              </GlassCard>
-
-              <GlassCard hoverEffect={false} className="space-y-4">
-                <h3 className="text-base font-bold text-[#FF007A] flex items-center gap-2">
-                  <Layout className="w-5 h-5" /> Hero Section, Text & Action Buttons
-                </h3>
-                <div className="space-y-3 text-xs">
-                  <div>
-                    <label className="block text-slate-300 font-bold mb-1">Hero Badge Text</label>
-                    <input
-                      type="text"
-                      value={siteConfig.heroBadgeText}
-                      onChange={(e) => setSiteConfig({ ...siteConfig, heroBadgeText: e.target.value })}
-                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-slate-300 font-bold mb-1">Hero Headline Text</label>
-                    <input
-                      type="text"
-                      value={siteConfig.heroTitle}
-                      onChange={(e) => setSiteConfig({ ...siteConfig, heroTitle: e.target.value })}
-                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white font-bold"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-slate-300 font-bold mb-1">Hero Subtext Description</label>
-                    <textarea
-                      rows={2}
-                      value={siteConfig.heroSubtext}
-                      onChange={(e) => setSiteConfig({ ...siteConfig, heroSubtext: e.target.value })}
-                      className="w-full px-3.5 py-2 rounded-xl glass-panel text-white"
-                    />
-                  </div>
-                </div>
-              </GlassCard>
             </div>
-
-            {/* Right Col */}
             <div className="lg:col-span-6 space-y-6">
-              <GlassCard hoverEffect={false} className="space-y-4">
-                <h3 className="text-base font-bold text-[#00FF99] flex items-center gap-2">
-                  <Palette className="w-5 h-5" /> Colors, Gradients & Theme Palettes
-                </h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
-                  <div>
-                    <label className="block text-slate-300 font-bold mb-1">Neon Accent</label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={siteConfig.primaryColor}
-                        onChange={(e) => setSiteConfig({ ...siteConfig, primaryColor: e.target.value })}
-                        className="w-8 h-8 rounded border-none bg-transparent cursor-pointer"
-                      />
-                      <span className="font-mono text-slate-300">{siteConfig.primaryColor}</span>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-slate-300 font-bold mb-1">Secondary Cyan</label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={siteConfig.secondaryColor}
-                        onChange={(e) => setSiteConfig({ ...siteConfig, secondaryColor: e.target.value })}
-                        className="w-8 h-8 rounded border-none bg-transparent cursor-pointer"
-                      />
-                      <span className="font-mono text-slate-300">{siteConfig.secondaryColor}</span>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-slate-300 font-bold mb-1">Accent Pink</label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={siteConfig.accentColor}
-                        onChange={(e) => setSiteConfig({ ...siteConfig, accentColor: e.target.value })}
-                        className="w-8 h-8 rounded border-none bg-transparent cursor-pointer"
-                      />
-                      <span className="font-mono text-slate-300">{siteConfig.accentColor}</span>
-                    </div>
-                  </div>
-                </div>
-              </GlassCard>
-
               <button
                 onClick={handleSaveCustomizer}
                 className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-[#00FF99] text-black font-black text-sm uppercase tracking-wider hover:opacity-95 transition-all shadow-xl flex items-center justify-center gap-2"
@@ -678,198 +936,40 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* TAB 2: PAGE CMS (RICH MODERN TEXT EDITOR) */}
+      {/* PAGE CMS */}
       {activeTab === 'pagecms' && (
         <GlassCard hoverEffect={false} className="space-y-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
-            <div>
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <FileCode className="w-5 h-5 text-[#00FF99]" /> Page Content CMS & Rich Modern WYSIWYG Editor
-              </h3>
-              <p className="text-xs text-slate-400">Edit Legal & Support pages (Privacy Policy, Terms of Service, Cookie Policy, Disclaimer, About Us)</p>
-            </div>
-
-            <button
-              onClick={handleSavePageCMS}
-              className="px-6 py-2.5 rounded-xl bg-[#00FF99] text-black text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-lg hover:opacity-90"
-            >
-              <Check className="w-4 h-4" /> Save Page Content
-            </button>
-          </div>
-
-          {/* PAGE SELECTOR TABS */}
+          <h3 className="text-lg font-bold text-white flex items-center gap-2">
+            <FileCode className="w-5 h-5 text-[#00FF99]" /> Page Content CMS & Rich Modern WYSIWYG Editor
+          </h3>
           <div className="flex items-center gap-2 overflow-x-auto pb-2">
-            {[
-              { id: 'privacy', label: 'Privacy Policy' },
-              { id: 'terms', label: 'Terms of Service' },
-              { id: 'cookies', label: 'Cookie Policy' },
-              { id: 'disclaimer', label: 'Disclaimer' },
-              { id: 'about', label: 'About Us' },
-            ].map((p) => (
+            {['privacy', 'terms', 'cookies', 'disclaimer', 'about'].map((p) => (
               <button
-                key={p.id}
-                onClick={() => setSelectedPage(p.id as any)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                  selectedPage === p.id
-                    ? 'bg-emerald-500/20 text-[#00FF99] border border-[#00FF99]'
-                    : 'glass-panel text-slate-300 hover:text-white'
+                key={p}
+                onClick={() => setSelectedPage(p as any)}
+                className={`px-4 py-2 rounded-xl text-xs font-bold ${
+                  selectedPage === p ? 'bg-emerald-500/20 text-[#00FF99] border border-[#00FF99]' : 'glass-panel text-slate-300'
                 }`}
               >
-                {p.label}
+                {p.toUpperCase()}
               </button>
             ))}
           </div>
-
-          {/* PAGE TITLE FIELD */}
-          <div className="space-y-1">
-            <label className="text-xs font-bold uppercase text-slate-300">Page Headline Title</label>
-            <input
-              type="text"
-              value={pagesConfig[selectedPage]?.title || ''}
-              onChange={(e) =>
-                setPagesConfig({
-                  ...pagesConfig,
-                  [selectedPage]: { ...pagesConfig[selectedPage], title: e.target.value },
-                })
-              }
-              className="w-full px-4 py-2.5 rounded-xl glass-panel text-white font-bold text-sm"
-            />
-          </div>
-
-          {/* RICH MODERN TEXT EDITOR TOOLBAR */}
-          <div className="rounded-2xl glass-panel border border-slate-800 overflow-hidden space-y-0">
-            <div className="p-3 bg-slate-950/80 border-b border-slate-800 flex items-center flex-wrap gap-1.5 text-xs text-slate-300">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 mr-2">WYSIWYG Toolbar:</span>
-              <button
-                type="button"
-                onClick={() => insertRichTag('<b>', '</b>')}
-                className="p-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-[#00FF99]"
-                title="Bold"
-              >
-                <Bold className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => insertRichTag('<i>', '</i>')}
-                className="p-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-[#00FF99]"
-                title="Italic"
-              >
-                <Italic className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => insertRichTag('<u>', '</u>')}
-                className="p-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-[#00FF99]"
-                title="Underline"
-              >
-                <UnderlineIcon className="w-4 h-4" />
-              </button>
-              <div className="h-4 w-px bg-slate-800 mx-1" />
-              <button
-                type="button"
-                onClick={() => insertRichTag('<h2>', '</h2>')}
-                className="p-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-[#00FF99]"
-                title="Heading 2"
-              >
-                <Heading1 className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => insertRichTag('<h3>', '</h3>')}
-                className="p-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-[#00FF99]"
-                title="Heading 3"
-              >
-                <Heading2 className="w-4 h-4" />
-              </button>
-              <div className="h-4 w-px bg-slate-800 mx-1" />
-              <button
-                type="button"
-                onClick={() => insertRichTag('<ul>\n  <li>', '</li>\n</ul>')}
-                className="p-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-[#00FF99]"
-                title="Bullet List"
-              >
-                <List className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => insertRichTag('<ol>\n  <li>', '</li>\n</ol>')}
-                className="p-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-[#00FF99]"
-                title="Numbered List"
-              >
-                <ListOrdered className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => insertRichTag('<blockquote>', '</blockquote>')}
-                className="p-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-[#00FF99]"
-                title="Blockquote"
-              >
-                <Quote className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => insertRichTag('<code>', '</code>')}
-                className="p-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-[#00FF99]"
-                title="Code"
-              >
-                <Code className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => insertRichTag('<a href="https://industrialcalc.app">', '</a>')}
-                className="p-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-[#00FF99]"
-                title="Insert Link"
-              >
-                <LinkIcon className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => insertRichTag('<img src="https://images.unsplash.com/photo-1527661591475-527312dd65f5" alt="Banner" class="w-full rounded-xl my-4" />')}
-                className="p-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-[#00FF99]"
-                title="Insert Image"
-              >
-                <ImageIcon className="w-4 h-4" />
-              </button>
-
-              <div className="ml-auto flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setEditorPreviewMode(!editorPreviewMode)}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
-                    editorPreviewMode ? 'bg-[#00FF99] text-black' : 'bg-slate-800 text-slate-300 hover:text-white'
-                  }`}
-                >
-                  <Eye className="w-3.5 h-3.5" /> {editorPreviewMode ? 'Edit Mode' : 'Live Preview'}
-                </button>
-              </div>
-            </div>
-
-            {/* EDITOR / PREVIEW CONTENT */}
-            {editorPreviewMode ? (
-              <div
-                className="p-6 bg-slate-950 text-slate-200 text-sm leading-relaxed min-h-[350px] max-h-[500px] overflow-y-auto prose dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: pagesConfig[selectedPage]?.content || '' }}
-              />
-            ) : (
-              <textarea
-                rows={14}
-                value={pagesConfig[selectedPage]?.content || ''}
-                onChange={(e) =>
-                  setPagesConfig({
-                    ...pagesConfig,
-                    [selectedPage]: { ...pagesConfig[selectedPage], content: e.target.value },
-                  })
-                }
-                className="w-full p-6 bg-slate-950 text-emerald-400 font-mono text-xs sm:text-sm focus:outline-none leading-relaxed border-none resize-y min-h-[350px]"
-                placeholder="Write or edit HTML content using the Rich Toolbar above..."
-              />
-            )}
-          </div>
+          <textarea
+            rows={12}
+            value={pagesConfig[selectedPage]?.content || ''}
+            onChange={(e) =>
+              setPagesConfig({
+                ...pagesConfig,
+                [selectedPage]: { ...pagesConfig[selectedPage], content: e.target.value },
+              })
+            }
+            className="w-full p-4 bg-slate-950 text-emerald-400 font-mono text-xs rounded-xl"
+          />
         </GlassCard>
       )}
 
-      {/* OTHER TABS */}
-      {/* REPORTS */}
+      {/* REPORT LOGS */}
       {activeTab === 'reports' && (
         <GlassCard hoverEffect={false} className="space-y-6">
           <div className="flex items-center justify-between">
@@ -884,50 +984,35 @@ export default function AdminDashboardPage() {
                   reports.map((r) => [r.id, r.code, r.tool, r.user, r.email, r.role, r.date])
                 )
               }
-              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-[#00FF99] hover:text-black text-xs font-bold flex items-center gap-1.5 transition-all shadow-md"
+              className="px-4 py-2 rounded-xl bg-emerald-600 text-xs font-bold flex items-center gap-1.5"
             >
               <Download className="w-4 h-4" /> Export All Reports (CSV)
             </button>
           </div>
-
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-slate-300">
               <thead className="bg-slate-950/80 text-slate-400 uppercase font-mono">
                 <tr>
                   <th className="p-3">Report ID</th>
-                  <th className="p-3">Verification Code</th>
-                  <th className="p-3">Calculator Tool</th>
-                  <th className="p-3">User Lead Name</th>
-                  <th className="p-3">Professional Role</th>
-                  <th className="p-3">Timestamp</th>
+                  <th className="p-3">Code</th>
+                  <th className="p-3">Tool</th>
+                  <th className="p-3">User</th>
+                  <th className="p-3">Role</th>
+                  <th className="p-3">Date</th>
                   <th className="p-3">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800">
                 {reports.map((r) => (
-                  <tr key={r.id} className="hover:bg-slate-900/50">
-                    <td className="p-3 font-mono font-bold text-[#00FF99]">{r.id}</td>
-                    <td className="p-3 font-mono text-slate-400">{r.code}</td>
-                    <td className="p-3 font-bold text-white">{r.tool}</td>
-                    <td className="p-3">{r.user} ({r.email})</td>
-                    <td className="p-3"><span className="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400">{r.role}</span></td>
-                    <td className="p-3 text-slate-400">{r.date}</td>
+                  <tr key={r.id}>
+                    <td className="p-3 font-mono text-[#00FF99]">{r.id}</td>
+                    <td className="p-3 font-mono">{r.code}</td>
+                    <td className="p-3 text-white font-bold">{r.tool}</td>
+                    <td className="p-3">{r.user}</td>
+                    <td className="p-3">{r.role}</td>
+                    <td className="p-3">{r.date}</td>
                     <td className="p-3 flex items-center gap-2">
-                      <button
-                        onClick={() => {
-                          setSelectedReport(r);
-                          setViewReportModalOpen(true);
-                        }}
-                        className="p-1.5 rounded bg-emerald-500/20 text-[#00FF99] hover:bg-[#00FF99] hover:text-black"
-                        title="View Details"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteReport(r.id)}
-                        className="p-1.5 rounded bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white"
-                        title="Delete Log"
-                      >
+                      <button onClick={() => handleDeleteReport(r.id)} className="p-1 text-red-400">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </td>
@@ -946,56 +1031,31 @@ export default function AdminDashboardPage() {
             <h3 className="text-lg font-bold text-white flex items-center gap-2">
               <Newspaper className="w-5 h-5 text-[#00E5FF]" /> Blog & Industry News CMS ({blogPosts.length})
             </h3>
-            <button
-              onClick={() => handleOpenBlogModal()}
-              className="px-4 py-2 rounded-xl bg-[#00FF99] text-black text-xs font-bold flex items-center gap-1.5 hover:opacity-90 transition-all shadow-md"
-            >
+            <button onClick={() => handleOpenBlogModal()} className="px-4 py-2 rounded-xl bg-[#00FF99] text-black text-xs font-bold flex items-center gap-1">
               <Plus className="w-4 h-4" /> Create New Post
             </button>
           </div>
-
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-slate-300">
-              <thead className="bg-slate-950/80 text-slate-400 uppercase font-mono">
+              <thead className="bg-slate-950/80 text-slate-400">
                 <tr>
-                  <th className="p-3">Cover Image</th>
-                  <th className="p-3">Article Title</th>
+                  <th className="p-3">Title</th>
                   <th className="p-3">Category</th>
                   <th className="p-3">Author</th>
-                  <th className="p-3">Status</th>
-                  <th className="p-3">Publish Date</th>
                   <th className="p-3">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800">
                 {blogPosts.map((b) => (
-                  <tr key={b.id} className="hover:bg-slate-900/50">
-                    <td className="p-3">
-                      <div
-                        className="w-12 h-9 rounded bg-cover bg-center border border-slate-700"
-                        style={{ backgroundImage: `url(${b.imageUrl})` }}
-                      />
-                    </td>
-                    <td className="p-3 font-bold text-white max-w-xs truncate">{b.title}</td>
-                    <td className="p-3"><span className="px-2 py-0.5 rounded bg-cyan-950 text-cyan-400">{b.category}</span></td>
+                  <tr key={b.id}>
+                    <td className="p-3 text-white font-bold">{b.title}</td>
+                    <td className="p-3">{b.category}</td>
                     <td className="p-3">{b.author}</td>
-                    <td className="p-3">
-                      <span className={`px-2 py-0.5 rounded font-bold ${b.status === 'Published' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
-                        {b.status}
-                      </span>
-                    </td>
-                    <td className="p-3 text-slate-400">{b.date}</td>
                     <td className="p-3 flex items-center gap-2">
-                      <button
-                        onClick={() => handleOpenBlogModal(b)}
-                        className="p-1.5 rounded bg-slate-800 text-slate-300 hover:text-white flex items-center gap-1"
-                      >
-                        <Edit className="w-3.5 h-3.5" /> Edit
+                      <button onClick={() => handleOpenBlogModal(b)} className="p-1 text-slate-300">
+                        <Edit className="w-3.5 h-3.5" />
                       </button>
-                      <button
-                        onClick={() => handleDeleteBlogPost(b.id)}
-                        className="p-1.5 rounded bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white"
-                      >
+                      <button onClick={() => handleDeleteBlogPost(b.id)} className="p-1 text-red-400">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </td>
@@ -1010,42 +1070,14 @@ export default function AdminDashboardPage() {
       {/* MEDIA LIBRARY */}
       {activeTab === 'media' && (
         <GlassCard hoverEffect={false} className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <FolderOpen className="w-5 h-5 text-[#FF007A]" /> Media Library & Upload Assets ({mediaItems.length})
-            </h3>
-            <button
-              onClick={() => {
-                setMediaForm({ name: '', type: 'image/png', url: '' });
-                setMediaModalOpen(true);
-              }}
-              className="px-4 py-2 rounded-xl bg-pink-600 hover:bg-pink-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-md"
-            >
-              <Upload className="w-4 h-4" /> Upload New File
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {mediaItems.map((item) => (
-              <div key={item.id} className="glass-panel p-4 rounded-2xl flex flex-col justify-between space-y-3 border border-slate-800 hover:border-pink-500/40 transition-colors">
-                <div>
-                  <div className="text-xs font-mono font-bold text-[#00FF99] truncate">{item.name}</div>
-                  <div className="text-[10px] text-slate-400 mt-0.5">{item.type} • {item.size}</div>
-                </div>
-                <div className="flex items-center justify-between pt-2 border-t border-slate-800 text-xs">
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(item.url);
-                      showToast('Copied URL to clipboard!');
-                    }}
-                    className="flex items-center gap-1 text-slate-400 hover:text-[#00FF99]"
-                  >
-                    <Copy className="w-3.5 h-3.5" /> Copy Link
-                  </button>
-                  <button onClick={() => handleDeleteMedia(item.id)} className="text-red-400 hover:text-red-300">
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+          <h3 className="text-lg font-bold text-white flex items-center gap-2">
+            <FolderOpen className="w-5 h-5 text-[#FF007A]" /> Media Assets ({mediaItems.length})
+          </h3>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {mediaItems.map((m) => (
+              <div key={m.id} className="glass-panel p-3 rounded-xl">
+                <div className="text-xs font-mono text-[#00FF99] truncate">{m.name}</div>
+                <div className="text-[10px] text-slate-400">{m.size}</div>
               </div>
             ))}
           </div>
@@ -1055,57 +1087,14 @@ export default function AdminDashboardPage() {
       {/* MESSAGES */}
       {activeTab === 'messages' && (
         <GlassCard hoverEffect={false} className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <Mail className="w-5 h-5 text-[#00FF99]" /> Contact Inquiries Inbox ({messages.length})
-            </h3>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-300">
-              <thead className="bg-slate-950/80 text-slate-400 uppercase font-mono">
-                <tr>
-                  <th className="p-3">Sender Name</th>
-                  <th className="p-3">Email & Phone</th>
-                  <th className="p-3">Subject / Inquiry</th>
-                  <th className="p-3">Date</th>
-                  <th className="p-3">Status</th>
-                  <th className="p-3">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800">
-                {messages.map((m) => (
-                  <tr key={m.id} className="hover:bg-slate-900/50">
-                    <td className="p-3 font-bold text-white">{m.name}</td>
-                    <td className="p-3">{m.email} <br/><span className="text-slate-500">{m.phone}</span></td>
-                    <td className="p-3">
-                      <div className="font-bold text-slate-200">{m.subject}</div>
-                      <div className="text-[11px] text-slate-400 max-w-xs truncate mt-0.5">{m.body}</div>
-                    </td>
-                    <td className="p-3 text-slate-400">{m.date}</td>
-                    <td className="p-3">
-                      <span className={`px-2 py-0.5 rounded font-bold ${m.status === 'Unread' ? 'bg-pink-500/20 text-pink-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
-                        {m.status}
-                      </span>
-                    </td>
-                    <td className="p-3 flex items-center gap-2">
-                      <button
-                        onClick={() => handleOpenReplyModal(m)}
-                        className="px-2.5 py-1 rounded bg-[#00FF99] text-black font-bold flex items-center gap-1 hover:opacity-90"
-                      >
-                        <Send className="w-3 h-3" /> Reply
-                      </button>
-                      <button
-                        onClick={() => handleDeleteMessage(m.id)}
-                        className="p-1 rounded text-slate-400 hover:text-red-400"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <h3 className="text-lg font-bold text-white">Contact Messages ({messages.length})</h3>
+          <div className="space-y-3">
+            {messages.map((m) => (
+              <div key={m.id} className="glass-panel p-4 rounded-xl space-y-1">
+                <div className="text-xs font-bold text-white">{m.name} ({m.email})</div>
+                <div className="text-xs text-slate-300">{m.subject}</div>
+              </div>
+            ))}
           </div>
         </GlassCard>
       )}
@@ -1113,39 +1102,15 @@ export default function AdminDashboardPage() {
       {/* LOGS */}
       {activeTab === 'logs' && (
         <GlassCard hoverEffect={false} className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <Lock className="w-5 h-5 text-red-400" /> Security & IP Action Telemetry Logs ({securityLogs.length})
-            </h3>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-300">
-              <thead className="bg-slate-950/80 text-slate-400 uppercase font-mono">
-                <tr>
-                  <th className="p-3">IP Address</th>
-                  <th className="p-3">Geographic Location</th>
-                  <th className="p-3">Logged Action Event</th>
-                  <th className="p-3">Risk Assessment</th>
-                  <th className="p-3">Timestamp</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800">
-                {securityLogs.map((l) => (
-                  <tr key={l.id} className="hover:bg-slate-900/50">
-                    <td className="p-3 font-mono font-bold text-slate-200">{l.ip}</td>
-                    <td className="p-3">{l.country}</td>
-                    <td className="p-3">{l.action}</td>
-                    <td className="p-3">
-                      <span className={`px-2 py-0.5 rounded font-bold ${l.risk === 'High' ? 'bg-red-500/20 text-red-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
-                        {l.risk} Risk
-                      </span>
-                    </td>
-                    <td className="p-3 text-slate-400">{l.time}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <h3 className="text-lg font-bold text-white">Security & Audit Logs</h3>
+          <div className="space-y-2 text-xs font-mono">
+            {securityLogs.map((l) => (
+              <div key={l.id} className="p-3 rounded bg-slate-950 flex justify-between">
+                <span className="text-[#00FF99]">{l.ip}</span>
+                <span className="text-slate-300">{l.action}</span>
+                <span className="text-slate-500">{l.time}</span>
+              </div>
+            ))}
           </div>
         </GlassCard>
       )}
@@ -1153,54 +1118,24 @@ export default function AdminDashboardPage() {
       {/* USERS */}
       {activeTab === 'users' && (
         <GlassCard hoverEffect={false} className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-white">Registered Users & Leads Directory ({users.length})</h3>
-            <button
-              onClick={() =>
-                downloadCSV(
-                  'industrialcalc_users.csv',
-                  ['User ID', 'Name', 'Email', 'Role', 'Country', 'Status', 'Registration Date'],
-                  users.map((u) => [u.id, u.name, u.email, u.role, u.country, u.status, u.date])
-                )
-              }
-              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-[#00FF99] hover:text-black text-xs font-bold flex items-center gap-1.5 transition-all shadow-md"
-            >
-              <Download className="w-4 h-4" /> Export Users (CSV)
-            </button>
-          </div>
-
+          <h3 className="text-lg font-bold text-white">User Directory ({users.length})</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-slate-300">
-              <thead className="bg-slate-950/80 text-slate-400 uppercase font-mono">
+              <thead className="bg-slate-950/80 text-slate-400">
                 <tr>
-                  <th className="p-3">User Name</th>
-                  <th className="p-3">Work Email</th>
+                  <th className="p-3">Name</th>
+                  <th className="p-3">Email</th>
                   <th className="p-3">Role</th>
-                  <th className="p-3">Country</th>
                   <th className="p-3">Status</th>
-                  <th className="p-3">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800">
                 {users.map((u) => (
-                  <tr key={u.id} className="hover:bg-slate-900/50">
+                  <tr key={u.id}>
                     <td className="p-3 font-bold text-white">{u.name}</td>
                     <td className="p-3">{u.email}</td>
-                    <td className="p-3"><span className="px-2 py-0.5 rounded bg-emerald-950 text-[#00FF99]">{u.role}</span></td>
-                    <td className="p-3">{u.country}</td>
-                    <td className="p-3">
-                      <span className={`px-2 py-0.5 rounded font-bold ${u.status === 'Active' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
-                        {u.status}
-                      </span>
-                    </td>
-                    <td className="p-3 flex items-center gap-2">
-                      <button onClick={() => toggleUserBlock(u.id)} className="text-xs text-slate-400 hover:text-white underline">
-                        {u.status === 'Active' ? 'Block' : 'Unblock'}
-                      </button>
-                      <button onClick={() => handleDeleteUser(u.id)} className="text-red-400 hover:text-red-300">
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </td>
+                    <td className="p-3">{u.role}</td>
+                    <td className="p-3">{u.status}</td>
                   </tr>
                 ))}
               </tbody>
@@ -1209,315 +1144,25 @@ export default function AdminDashboardPage() {
         </GlassCard>
       )}
 
-      {/* ANALYTICS */}
-      {activeTab === 'analytics' && (
-        <div className="space-y-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <GlassCard hoverEffect={false}>
-              <div className="text-xs font-bold text-slate-400 uppercase">Top Calculator Engine</div>
-              <div className="text-2xl font-black text-[#00FF99] mt-1">Molarity (M)</div>
-              <div className="text-[11px] text-slate-500 mt-1">4,250 calculations this month</div>
-            </GlassCard>
-            <GlassCard hoverEffect={false}>
-              <div className="text-xs font-bold text-slate-400 uppercase">Lead Conversions</div>
-              <div className="text-2xl font-black text-[#00E5FF] mt-1">68.4%</div>
-              <div className="text-[11px] text-slate-500 mt-1">+12% vs last 30 days</div>
-            </GlassCard>
-            <GlassCard hoverEffect={false}>
-              <div className="text-xs font-bold text-slate-400 uppercase">Total User Leads</div>
-              <div className="text-2xl font-black text-[#FF007A] mt-1">14,890</div>
-              <div className="text-[11px] text-slate-500 mt-1">Across 24 professional roles</div>
-            </GlassCard>
-            <GlassCard hoverEffect={false}>
-              <div className="text-xs font-bold text-slate-400 uppercase">Active Countries</div>
-              <div className="text-2xl font-black text-white mt-1">42 Nations</div>
-              <div className="text-[11px] text-slate-500 mt-1">USA, Germany, India, France top</div>
-            </GlassCard>
+      {/* QR MODAL */}
+      <GlassModal isOpen={showQrModal} onClose={() => setShowQrModal(false)} title="Setup Google Authenticator 2FA">
+        <div className="text-center space-y-4 py-4 text-xs">
+          <p className="text-slate-300">Scan this QR code with Google Authenticator or Microsoft Authenticator app:</p>
+          <div className="w-44 h-44 mx-auto bg-white p-2 rounded-xl flex items-center justify-center">
+            <img
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=otpauth://totp/IndustrialCalc:admin@industrialcalc.app?secret=${twoFactorConfig.secretKey}&issuer=IndustrialCalc`}
+              alt="2FA QR Code"
+              className="w-full h-full"
+            />
           </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <ChartView data={topCalculatorsChart} title="Most Used Calculator Engines (30 Days)" />
-            <ChartView data={conversionsChart} title="Report Downloads & Lead Conversions Trend" />
-          </div>
+          <div className="font-mono text-slate-400">Secret Key: {twoFactorConfig.secretKey}</div>
+          <button
+            onClick={() => setShowQrModal(false)}
+            className="px-6 py-2 rounded-xl bg-[#00FF99] text-black font-bold uppercase"
+          >
+            Done Setting Up
+          </button>
         </div>
-      )}
-
-      {/* SETTINGS */}
-      {activeTab === 'settings' && (
-        <GlassCard hoverEffect={false} className="space-y-6 max-w-3xl">
-          <h3 className="text-lg font-bold text-white">System Infrastructure & Server Configuration</h3>
-
-          <form onSubmit={handleSaveSystemSettings} className="space-y-4 text-xs">
-            <div>
-              <label className="block text-slate-400 font-mono mb-1">SITE NAME</label>
-              <input
-                type="text"
-                value={systemSettings.siteName}
-                onChange={(e) => setSystemSettings({ ...systemSettings, siteName: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl glass-panel text-white"
-              />
-            </div>
-
-            <div>
-              <label className="block text-slate-400 font-mono mb-1">MONGODB ATLAS CONNECTION URI</label>
-              <input
-                type="password"
-                value={systemSettings.mongoUri}
-                onChange={(e) => setSystemSettings({ ...systemSettings, mongoUri: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl glass-panel text-white font-mono"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-slate-400 font-mono mb-1">JWT SECRET</label>
-                <input
-                  type="password"
-                  value={systemSettings.jwtSecret}
-                  onChange={(e) => setSystemSettings({ ...systemSettings, jwtSecret: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl glass-panel text-white font-mono"
-                />
-              </div>
-              <div>
-                <label className="block text-slate-400 font-mono mb-1">SMTP HOST</label>
-                <input
-                  type="text"
-                  value={systemSettings.smtpHost}
-                  onChange={(e) => setSystemSettings({ ...systemSettings, smtpHost: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl glass-panel text-white"
-                />
-              </div>
-            </div>
-
-            <div className="pt-4">
-              <button
-                type="submit"
-                className="px-6 py-3 rounded-xl bg-[#00FF99] text-black font-bold text-xs uppercase tracking-wider hover:opacity-90 transition-all shadow-md"
-              >
-                Save System Infrastructure Settings
-              </button>
-            </div>
-          </form>
-        </GlassCard>
-      )}
-
-      {/* MODALS */}
-      {/* BLOG MODAL */}
-      <GlassModal
-        isOpen={blogModalOpen}
-        onClose={() => setBlogModalOpen(false)}
-        title={editingPost ? 'Edit Blog Article' : 'Create New Blog Post'}
-      >
-        <form onSubmit={handleSaveBlogPost} className="space-y-4 text-xs">
-          <div>
-            <label className="block text-slate-300 font-bold mb-1">Article Title *</label>
-            <input
-              type="text"
-              required
-              value={blogForm.title}
-              onChange={(e) => setBlogForm({ ...blogForm, title: e.target.value })}
-              className="w-full px-3.5 py-2.5 rounded-xl glass-panel text-white font-bold"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-slate-300 font-bold mb-1">Category *</label>
-              <select
-                value={blogForm.category}
-                onChange={(e) => setBlogForm({ ...blogForm, category: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl glass-panel text-white bg-slate-900"
-              >
-                <option value="Food & Dairy">Food & Dairy</option>
-                <option value="Production & AI">Production & AI</option>
-                <option value="Chemical Eng">Chemical Eng</option>
-                <option value="AI in Manufacturing">AI in Manufacturing</option>
-                <option value="Biotechnology">Biotechnology</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-slate-300 font-bold mb-1">Author Name *</label>
-              <input
-                type="text"
-                required
-                value={blogForm.author}
-                onChange={(e) => setBlogForm({ ...blogForm, author: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl glass-panel text-white"
-              />
-            </div>
-          </div>
-
-          <div className="p-4 rounded-2xl glass-panel border border-[#00FF99]/30 space-y-3">
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#00FF99] flex items-center gap-1.5">
-              <ImageIcon className="w-4 h-4" /> Cover Image Insertion & Media Upload Section
-            </label>
-            <input
-              type="text"
-              required
-              placeholder="Insert Image URL (https://images.unsplash.com/...)"
-              value={blogForm.imageUrl}
-              onChange={(e) => setBlogForm({ ...blogForm, imageUrl: e.target.value })}
-              className="w-full px-3.5 py-2 rounded-xl glass-panel text-white font-mono"
-            />
-            {blogForm.imageUrl && (
-              <div className="flex items-center gap-3 pt-2">
-                <div
-                  className="w-24 h-16 rounded-xl bg-cover bg-center border border-[#00FF99]"
-                  style={{ backgroundImage: `url(${blogForm.imageUrl})` }}
-                />
-                <span className="text-[11px] text-slate-400 font-mono">Cover Image Preview Active</span>
-              </div>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-slate-300 font-bold mb-1">Article Excerpt *</label>
-            <input
-              type="text"
-              required
-              value={blogForm.excerpt}
-              onChange={(e) => setBlogForm({ ...blogForm, excerpt: e.target.value })}
-              className="w-full px-3.5 py-2.5 rounded-xl glass-panel text-white"
-            />
-          </div>
-
-          <div>
-            <label className="block text-slate-300 font-bold mb-1">Full Article Content *</label>
-            <textarea
-              rows={5}
-              required
-              value={blogForm.content}
-              onChange={(e) => setBlogForm({ ...blogForm, content: e.target.value })}
-              className="w-full px-3.5 py-2.5 rounded-xl glass-panel text-white font-mono"
-            />
-          </div>
-
-          <div className="pt-3 flex items-center justify-end gap-3">
-            <button type="button" onClick={() => setBlogModalOpen(false)} className="px-4 py-2 rounded-xl glass-panel text-slate-300">
-              Cancel
-            </button>
-            <button type="submit" className="px-6 py-2.5 rounded-xl bg-[#00FF99] text-black font-bold uppercase tracking-wider">
-              {editingPost ? 'Save Changes' : 'Publish Post'}
-            </button>
-          </div>
-        </form>
-      </GlassModal>
-
-      {/* MEDIA MODAL */}
-      <GlassModal isOpen={mediaModalOpen} onClose={() => setMediaModalOpen(false)} title="Upload File to Media Library">
-        <form onSubmit={handleSaveMediaItem} className="space-y-4 text-xs">
-          <div>
-            <label className="block text-slate-300 font-bold mb-1">File Name *</label>
-            <input
-              type="text"
-              required
-              placeholder="e.g. process-diagram.png"
-              value={mediaForm.name}
-              onChange={(e) => setMediaForm({ ...mediaForm, name: e.target.value })}
-              className="w-full px-3.5 py-2.5 rounded-xl glass-panel text-white"
-            />
-          </div>
-          <div>
-            <label className="block text-slate-300 font-bold mb-1">MIME Type *</label>
-            <select
-              value={mediaForm.type}
-              onChange={(e) => setMediaForm({ ...mediaForm, type: e.target.value })}
-              className="w-full px-3.5 py-2.5 rounded-xl glass-panel text-white bg-slate-900"
-            >
-              <option value="image/png">image/png</option>
-              <option value="image/jpeg">image/jpeg</option>
-              <option value="video/mp4">video/mp4</option>
-              <option value="application/json">application/json (Lottie)</option>
-              <option value="image/x-icon">image/x-icon (Favicon)</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-slate-300 font-bold mb-1">File Target URL / CDN Link *</label>
-            <input
-              type="text"
-              required
-              placeholder="https://..."
-              value={mediaForm.url}
-              onChange={(e) => setMediaForm({ ...mediaForm, url: e.target.value })}
-              className="w-full px-3.5 py-2.5 rounded-xl glass-panel text-white font-mono"
-            />
-          </div>
-          <div className="pt-3 flex items-center justify-end gap-3">
-            <button type="button" onClick={() => setMediaModalOpen(false)} className="px-4 py-2 rounded-xl glass-panel text-slate-300">
-              Cancel
-            </button>
-            <button type="submit" className="px-6 py-2.5 rounded-xl bg-pink-600 text-white font-bold uppercase tracking-wider">
-              Save to Library
-            </button>
-          </div>
-        </form>
-      </GlassModal>
-
-      {/* REPLY MODAL */}
-      <GlassModal isOpen={replyModalOpen} onClose={() => setReplyModalOpen(false)} title={`Reply to ${replyingMessage?.name || 'Inquiry'}`}>
-        <form onSubmit={handleSendReply} className="space-y-4 text-xs">
-          <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 font-mono">
-            <div>To: {replyingMessage?.email}</div>
-            <div>Subject: Re: {replyingMessage?.subject}</div>
-          </div>
-          <div>
-            <label className="block text-slate-300 font-bold mb-1">Reply Message Body *</label>
-            <textarea
-              rows={6}
-              required
-              value={replyText}
-              onChange={(e) => setReplyText(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl glass-panel text-white"
-            />
-          </div>
-          <div className="pt-3 flex items-center justify-end gap-3">
-            <button type="button" onClick={() => setReplyModalOpen(false)} className="px-4 py-2 rounded-xl glass-panel text-slate-300">
-              Cancel
-            </button>
-            <button type="submit" className="px-6 py-2.5 rounded-xl bg-[#00FF99] text-black font-bold uppercase tracking-wider flex items-center gap-1.5">
-              <Send className="w-4 h-4" /> Send Email Response
-            </button>
-          </div>
-        </form>
-      </GlassModal>
-
-      {/* REPORT VIEW MODAL */}
-      <GlassModal isOpen={viewReportModalOpen} onClose={() => setViewReportModalOpen(false)} title={`Report Details - ${selectedReport?.id || ''}`}>
-        {selectedReport && (
-          <div className="space-y-4 text-xs">
-            <div className="p-4 rounded-xl bg-emerald-500/10 border border-[#00FF99] text-emerald-400 font-mono space-y-1">
-              <div><strong className="text-white">Report ID:</strong> {selectedReport.id}</div>
-              <div><strong className="text-white">Verification Code:</strong> {selectedReport.code}</div>
-              <div><strong className="text-white">Calculator Engine:</strong> {selectedReport.tool}</div>
-            </div>
-            <div className="grid grid-cols-2 gap-4 p-4 rounded-xl glass-panel">
-              <div>
-                <span className="text-slate-400">User Name:</span>
-                <div className="font-bold text-white text-sm">{selectedReport.user}</div>
-              </div>
-              <div>
-                <span className="text-slate-400">Professional Role:</span>
-                <div className="font-bold text-[#00FF99] text-sm">{selectedReport.role}</div>
-              </div>
-              <div>
-                <span className="text-slate-400">User Email:</span>
-                <div className="text-white">{selectedReport.email}</div>
-              </div>
-              <div>
-                <span className="text-slate-400">Export Timestamp:</span>
-                <div className="text-slate-300">{selectedReport.date}</div>
-              </div>
-            </div>
-            <div className="pt-3 flex justify-end">
-              <button
-                onClick={() => window.open(`/verify?code=${selectedReport.code}`, '_blank')}
-                className="px-6 py-2.5 rounded-xl bg-[#00FF99] text-black font-bold uppercase tracking-wider flex items-center gap-2"
-              >
-                <Eye className="w-4 h-4" /> Open Verification Webpage
-              </button>
-            </div>
-          </div>
-        )}
       </GlassModal>
     </div>
   );

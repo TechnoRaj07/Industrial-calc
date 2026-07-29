@@ -1,34 +1,56 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import GlassCard from '@/components/ui/GlassCard';
 import { ShieldCheck, Mail, ArrowRight, Key, Info } from 'lucide-react';
 
 export default function AdminLoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState('admin@industrialcalc.app');
   const [password, setPassword] = useState('Admin@2026');
   const [error, setError] = useState('');
+  const [activeCreds, setActiveCreds] = useState({ email: 'admin@industrialcalc.app', password: 'Admin@2026' });
+
+  useEffect(() => {
+    const saved = localStorage.getItem('industrialcalc_adminCreds');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.email && parsed.password) {
+          setActiveCreds(parsed);
+          setEmail(parsed.email);
+        }
+      } catch (e) {
+        console.warn('Error reading admin creds', e);
+      }
+    }
+  }, []);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     const cleanEmail = email.trim().toLowerCase();
     const cleanPassword = password.trim();
 
+    const expectedEmail = activeCreds.email.trim().toLowerCase();
+    const expectedPassword = activeCreds.password.trim();
+
     if (
+      cleanEmail === expectedEmail ||
       cleanEmail === 'admin@industrialcalc.app' ||
-      cleanEmail === 'admin' ||
-      cleanPassword === 'Admin@2026' ||
-      cleanPassword === 'admin' ||
-      cleanPassword === 'admin123'
+      cleanEmail === 'admin'
     ) {
-      localStorage.setItem('adminAuthenticated', 'true');
-      document.cookie = 'adminAuth=true; path=/';
-      window.location.href = '/admin';
-    } else {
-      setError('Invalid credentials. Use admin@industrialcalc.app and Admin@2026');
+      if (
+        cleanPassword === expectedPassword ||
+        cleanPassword === 'Admin@2026' ||
+        cleanPassword === 'admin'
+      ) {
+        localStorage.setItem('adminAuthenticated', 'true');
+        document.cookie = 'adminAuth=true; path=/';
+        window.location.href = '/admin';
+        return;
+      }
     }
+
+    setError(`Invalid credentials. Check your email & password or use ${activeCreds.email}`);
   };
 
   return (
@@ -93,11 +115,11 @@ export default function AdminLoginPage() {
           {/* CREDENTIALS BADGE */}
           <div className="mt-6 pt-4 border-t border-slate-800 text-xs text-slate-400 space-y-1.5">
             <div className="flex items-center gap-1.5 text-[#00FF99] font-bold">
-              <Info className="w-4 h-4" /> Default Admin Login Credentials:
+              <Info className="w-4 h-4" /> Active Admin Login Credentials:
             </div>
             <div className="font-mono bg-slate-950 p-3 rounded-xl border border-emerald-950 text-slate-300 space-y-1">
-              <div><span className="text-slate-500">Email:</span> admin@industrialcalc.app (or admin)</div>
-              <div><span className="text-slate-500">Password:</span> Admin@2026 (or admin)</div>
+              <div><span className="text-slate-500">Email:</span> {activeCreds.email}</div>
+              <div><span className="text-slate-500">Password:</span> •••••••••••• (or Admin@2026)</div>
             </div>
           </div>
         </GlassCard>
