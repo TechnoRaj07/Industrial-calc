@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import GlassCard from '@/components/ui/GlassCard';
 
+import { sanitizeHTML } from '@/lib/security/sanitizer';
+
 export default function TermsPage() {
   const [pageData, setPageData] = useState({
     title: 'Terms of Service',
@@ -28,7 +30,7 @@ export default function TermsPage() {
       <h1 className="text-3xl font-black text-slate-900 dark:text-white">{pageData.title}</h1>
 
       <GlassCard hoverEffect={false} className="prose dark:prose-invert max-w-none space-y-4 text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
-        <div dangerouslySetInnerHTML={{ __html: pageData.content }} />
+        <div dangerouslySetInnerHTML={{ __html: sanitizeHTML(pageData.content) }} />
       </GlassCard>
     </div>
   );
