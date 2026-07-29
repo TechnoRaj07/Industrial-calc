@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { UserRole, LeadInfo, GeneratedReport, CalculatorResultItem } from '@/types';
+import { UserRole, GeneratedReport, CalculatorResultItem } from '@/types';
 import GlassModal from './GlassModal';
-import { Download, FileText, Image as ImageIcon, ShieldCheck, CheckCircle, Loader2 } from 'lucide-react';
+import { Download, FileText, Image as ImageIcon, ShieldCheck, CheckCircle2, FileCheck } from 'lucide-react';
 import { createPDFReport, createDOCXReport, generateQRCodeDataURL } from '@/lib/reports';
 
 const ROLES: UserRole[] = [
@@ -33,6 +33,8 @@ const ROLES: UserRole[] = [
   'Other',
 ];
 
+export type ExportFormatOption = 'pdf' | 'docx' | 'png' | 'all';
+
 interface LeadCaptureModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -55,6 +57,7 @@ export default function LeadCaptureModal({
   const [email, setEmail] = useState('');
   const [mobile, setMobile] = useState('');
   const [role, setRole] = useState<UserRole>('Process Engineer');
+  const [selectedFormat, setSelectedFormat] = useState<ExportFormatOption>('pdf');
   const [loading, setLoading] = useState(false);
   const [generatedReport, setGeneratedReport] = useState<GeneratedReport | null>(null);
 
@@ -66,7 +69,13 @@ export default function LeadCaptureModal({
     const reportId = `IC-${Math.floor(100000 + Math.random() * 900000)}`;
     const verificationCode = `VER-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
     const timestamp = new Date().toLocaleString();
-    const qrCodeUrl = await generateQRCodeDataURL(`https://industrialcalc.app/verify?code=${verificationCode}`);
+
+    let qrUrl = '';
+    try {
+      qrUrl = await generateQRCodeDataURL(`https://industrialcalc.app/verify?code=${verificationCode}`);
+    } catch (qrErr) {
+      console.warn('QR code generation warning', qrErr);
+    }
 
     const report: GeneratedReport = {
       reportId,
@@ -77,92 +86,172 @@ export default function LeadCaptureModal({
       lead: { name, email, mobile, role },
       inputs,
       results,
-      qrCodeUrl,
+      qrCodeUrl: qrUrl,
     };
 
-    // Save lead to server API background silently
-    try {
-      await fetch('/api/reports/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(report),
-      });
-    } catch (err) {
-      console.warn('Silent local report log', err);
-    }
-
     setGeneratedReport(report);
+
+    // Non-blocking background log to server API
+    fetch('/api/reports/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(report),
+    }).catch((err) => console.warn('Non-blocking API log', err));
+
     setLoading(false);
     setStep('download');
+
+    // Auto-trigger initial selected format download
+    if (selectedFormat === 'pdf' || selectedFormat === 'all') {
+      handleDownloadPDF(report);
+    }
+    if (selectedFormat === 'docx' || selectedFormat === 'all') {
+      handleDownloadDOCX(report);
+    }
+    if (selectedFormat === 'png' || selectedFormat === 'all') {
+      handleDownloadPNG(report);
+    }
   };
 
-  const handleDownloadPDF = async () => {
-    if (!generatedReport) return;
-    const pdfBytes = await createPDFReport(generatedReport);
-    const blob = new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `IndustrialCalc_${calculatorSlug}_${generatedReport.reportId}.pdf`;
-    link.click();
-    URL.revokeObjectURL(url);
-  };
+  const handleDownloadPDF = async (targetReport?: GeneratedReport) => {
+    const report = targetReport || generatedReport;
+    if (!report) return;
 
-  const handleDownloadDOCX = async () => {
-    if (!generatedReport) return;
-    const docxBlob = await createDOCXReport(generatedReport);
-    const url = URL.createObjectURL(docxBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `IndustrialCalc_${calculatorSlug}_${generatedReport.reportId}.docx`;
-    link.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const handleDownloadPNG = () => {
-    if (!generatedReport) return;
-    // Create quick canvas representation
-    const canvas = document.createElement('canvas');
-    canvas.width = 800;
-    canvas.height = 600;
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.fillStyle = '#081B10';
-      ctx.fillRect(0, 0, 800, 600);
-      ctx.fillStyle = '#00FF99';
-      ctx.font = 'bold 24px sans-serif';
-      ctx.fillText('INDUSTRIALCALC REPORT', 40, 50);
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = '20px sans-serif';
-      ctx.fillText(`Tool: ${calculatorTitle}`, 40, 90);
-      ctx.fillText(`Report ID: ${generatedReport.reportId}`, 40, 120);
-      ctx.fillText(`User: ${generatedReport.lead.name} (${generatedReport.lead.role})`, 40, 150);
-
-      ctx.fillStyle = '#00FF99';
-      ctx.font = 'bold 18px sans-serif';
-      ctx.fillText('CALCULATED RESULTS:', 40, 210);
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = '16px sans-serif';
-      let y = 240;
-      results.forEach((res) => {
-        ctx.fillText(`• ${res.label}: ${res.value} ${res.unit || ''}`, 50, y);
-        y += 30;
-      });
-
-      const url = canvas.toDataURL('image/png');
+    try {
+      const pdfBytes = await createPDFReport(report);
+      const blob = new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `IndustrialCalc_${calculatorSlug}_${generatedReport.reportId}.png`;
+      link.download = `IndustrialCalc_${calculatorSlug}_${report.reportId}.pdf`;
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (e) {
+      console.error('PDF export error', e);
     }
+  };
+
+  const handleDownloadDOCX = async (targetReport?: GeneratedReport) => {
+    const report = targetReport || generatedReport;
+    if (!report) return;
+
+    try {
+      const docxBlob = await createDOCXReport(report);
+      const url = URL.createObjectURL(docxBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `IndustrialCalc_${calculatorSlug}_${report.reportId}.docx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (e) {
+      console.error('DOCX export error', e);
+    }
+  };
+
+  const handleDownloadPNG = (targetReport?: GeneratedReport) => {
+    const report = targetReport || generatedReport;
+    if (!report) return;
+
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = 800;
+      canvas.height = 650;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        // Background
+        ctx.fillStyle = '#051810';
+        ctx.fillRect(0, 0, 800, 650);
+
+        // Header Accent
+        ctx.fillStyle = '#00FF99';
+        ctx.fillRect(0, 0, 800, 8);
+
+        // Branding
+        ctx.fillStyle = '#00FF99';
+        ctx.font = 'bold 26px sans-serif';
+        ctx.fillText('INDUSTRIALCALC TECHNICAL REPORT', 40, 50);
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = '18px sans-serif';
+        ctx.fillText(`Calculator: ${calculatorTitle}`, 40, 85);
+
+        ctx.fillStyle = '#94A3B8';
+        ctx.font = '14px sans-serif';
+        ctx.fillText(`Report ID: ${report.reportId}  |  Generated: ${report.timestamp}`, 40, 115);
+        ctx.fillText(`User: ${report.lead.name} (${report.lead.role})`, 40, 135);
+
+        ctx.strokeStyle = '#00FF99';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(40, 155);
+        ctx.lineTo(760, 155);
+        ctx.stroke();
+
+        // Input Values
+        ctx.fillStyle = '#00FF99';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.fillText('INPUT PARAMETERS:', 40, 190);
+        ctx.fillStyle = '#E2E8F0';
+        ctx.font = '14px sans-serif';
+        let y = 215;
+        inputs.slice(0, 4).forEach((inp) => {
+          ctx.fillText(`• ${inp.label}: ${inp.value} ${inp.unit || ''}`, 50, y);
+          y += 24;
+        });
+
+        // Results
+        ctx.fillStyle = '#00FF99';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.fillText('CALCULATED RESULTS:', 40, y + 25);
+        y += 50;
+
+        results.forEach((res) => {
+          if (res.highlight) {
+            ctx.fillStyle = 'rgba(0, 255, 153, 0.15)';
+            ctx.fillRect(40, y - 18, 720, 30);
+            ctx.fillStyle = '#00FF99';
+            ctx.font = 'bold 16px sans-serif';
+          } else {
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '14px sans-serif';
+          }
+          ctx.fillText(`▶ ${res.label}: ${res.value} ${res.unit || ''}`, 50, y);
+          y += 32;
+        });
+
+        // Footer Verification
+        ctx.fillStyle = '#94A3B8';
+        ctx.font = '12px monospace';
+        ctx.fillText(`Verification Code: ${report.verificationCode}  |  Verify online at /verify`, 40, 610);
+
+        const url = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `IndustrialCalc_${calculatorSlug}_${report.reportId}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    } catch (e) {
+      console.error('PNG export error', e);
+    }
+  };
+
+  const handleResetModal = () => {
+    setStep('form');
+    onClose();
   };
 
   return (
-    <GlassModal isOpen={isOpen} onClose={onClose} title={step === 'form' ? 'Export Verified Report' : 'Report Unlocked!'}>
+    <GlassModal isOpen={isOpen} onClose={handleResetModal} title={step === 'form' ? 'Export Verified Report' : 'Report Unlocked & Downloaded!'}>
       {step === 'form' ? (
         <form onSubmit={handleSubmitLead} className="space-y-4">
-          <p className="text-sm text-slate-600 dark:text-slate-300">
-            Please enter your professional details to unlock your verified PDF, DOCX, and PNG calculations report with QR verification stamp.
+          <p className="text-xs text-slate-600 dark:text-slate-300">
+            Please enter your professional details and select your preferred download format to unlock your QR-verified calculation report.
           </p>
 
           <div>
@@ -225,31 +314,55 @@ export default function LeadCaptureModal({
             </select>
           </div>
 
-          <div className="pt-3">
+          {/* SELECT DESIRED EXPORT FORMAT */}
+          <div className="p-4 rounded-2xl glass-panel border border-[#00FF99]/30 space-y-2">
+            <label className="block text-xs font-bold uppercase tracking-wider text-[#00FF99] flex items-center gap-1.5">
+              <FileCheck className="w-4 h-4" /> Select Preferred Download Format *
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+              {[
+                { id: 'pdf', label: 'PDF Document', icon: Download },
+                { id: 'docx', label: 'Word (.docx)', icon: FileText },
+                { id: 'png', label: 'PNG Image', icon: ImageIcon },
+                { id: 'all', label: 'All Formats', icon: CheckCircle2 },
+              ].map((fmt) => {
+                const Icon = fmt.icon;
+                return (
+                  <button
+                    key={fmt.id}
+                    type="button"
+                    onClick={() => setSelectedFormat(fmt.id as ExportFormatOption)}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold flex flex-col items-center gap-1 border transition-all ${
+                      selectedFormat === fmt.id
+                        ? 'bg-[#00FF99] text-black border-[#00FF99] shadow-lg shadow-[#00FF99]/20'
+                        : 'glass-panel text-slate-300 border-slate-700 hover:border-emerald-500'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span>{fmt.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="pt-2">
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-[#00FF99] hover:text-black font-bold text-white transition-all shadow-lg flex items-center justify-center gap-2"
+              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 to-[#00FF99] text-black font-extrabold hover:opacity-95 transition-all shadow-xl flex items-center justify-center gap-2 text-sm uppercase tracking-wider"
             >
-              {loading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" /> Generating QR Stamp...
-                </>
-              ) : (
-                <>
-                  <ShieldCheck className="w-5 h-5" /> Generate Verified Report
-                </>
-              )}
+              <ShieldCheck className="w-5 h-5" /> Generate & Download Verified Report ({selectedFormat.toUpperCase()})
             </button>
           </div>
         </form>
       ) : (
         <div className="space-y-6">
           <div className="flex items-center gap-3 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-[#00FF99]">
-            <CheckCircle className="w-6 h-6 shrink-0" />
+            <CheckCircle2 className="w-6 h-6 shrink-0" />
             <div>
-              <p className="font-bold text-sm">Report Authenticated Successfully!</p>
-              <p className="text-xs opacity-90">Report ID: {generatedReport?.reportId} | QR Code Embedded</p>
+              <p className="font-bold text-sm">Report Authenticated & Generated!</p>
+              <p className="text-xs opacity-90">Report ID: {generatedReport?.reportId} | QR Code Verification Embedded</p>
             </div>
           </div>
 
@@ -257,30 +370,33 @@ export default function LeadCaptureModal({
             <div className="flex items-center justify-center p-4 glass-panel rounded-2xl">
               <div className="text-center">
                 <img src={generatedReport.qrCodeUrl} alt="QR Code" className="w-32 h-32 mx-auto rounded-lg mb-2 shadow-md" />
-                <span className="text-[11px] text-slate-400 font-mono">Scan to verify at /verify</span>
+                <span className="text-[11px] text-slate-400 font-mono">Scan to verify at /verify?code={generatedReport.verificationCode}</span>
               </div>
             </div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <button
-              onClick={handleDownloadPDF}
-              className="py-3 px-4 rounded-xl bg-red-600/90 hover:bg-red-600 text-white font-semibold text-xs flex items-center justify-center gap-2 transition-all shadow-md"
-            >
-              <Download className="w-4 h-4" /> Download PDF
-            </button>
-            <button
-              onClick={handleDownloadDOCX}
-              className="py-3 px-4 rounded-xl bg-blue-600/90 hover:bg-blue-600 text-white font-semibold text-xs flex items-center justify-center gap-2 transition-all shadow-md"
-            >
-              <FileText className="w-4 h-4" /> Download DOCX
-            </button>
-            <button
-              onClick={handleDownloadPNG}
-              className="py-3 px-4 rounded-xl bg-emerald-600/90 hover:bg-emerald-600 text-white font-semibold text-xs flex items-center justify-center gap-2 transition-all shadow-md"
-            >
-              <ImageIcon className="w-4 h-4" /> Save PNG Card
-            </button>
+          <div className="space-y-2">
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block text-center">Download Additional Report Formats</span>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <button
+                onClick={() => handleDownloadPDF()}
+                className="py-3 px-4 rounded-xl bg-red-600/90 hover:bg-red-600 text-white font-semibold text-xs flex items-center justify-center gap-2 transition-all shadow-md"
+              >
+                <Download className="w-4 h-4" /> Download PDF
+              </button>
+              <button
+                onClick={() => handleDownloadDOCX()}
+                className="py-3 px-4 rounded-xl bg-blue-600/90 hover:bg-blue-600 text-white font-semibold text-xs flex items-center justify-center gap-2 transition-all shadow-md"
+              >
+                <FileText className="w-4 h-4" /> Download DOCX
+              </button>
+              <button
+                onClick={() => handleDownloadPNG()}
+                className="py-3 px-4 rounded-xl bg-emerald-600/90 hover:bg-emerald-600 text-white font-semibold text-xs flex items-center justify-center gap-2 transition-all shadow-md"
+              >
+                <ImageIcon className="w-4 h-4" /> Save PNG Card
+              </button>
+            </div>
           </div>
         </div>
       )}
