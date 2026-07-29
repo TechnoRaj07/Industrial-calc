@@ -7,7 +7,7 @@ import GlassCard from '@/components/ui/GlassCard';
 import ChartView from '@/components/ui/ChartView';
 import LeadCaptureModal from '@/components/ui/LeadCaptureModal';
 import { CalculatorResultItem } from '@/types';
-import { Calculator, ArrowLeft, Download, RefreshCw, CheckCircle2, ChevronDown, BookOpen } from 'lucide-react';
+import { Calculator, ArrowLeft, Download, RefreshCw, CheckCircle2, ChevronDown, Factory, FileText, Check } from 'lucide-react';
 import Link from 'next/link';
 
 export default function SingleCalculatorPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -212,33 +212,44 @@ export default function SingleCalculatorPage({ params }: { params: Promise<{ slu
           </div>
         </div>
 
-        {/* TECHNICAL FORMULA & EXPLANATION */}
+        {/* INDUSTRIAL IMPLEMENTATION & OPERATIONAL OVERVIEW (REPLACED RAW FORMULAS WITH PLAIN TEXT EXPLANATION) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div className="lg:col-span-12 space-y-6">
-            <GlassCard hoverEffect={false}>
-              <div className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white mb-4">
-                <BookOpen className="w-5 h-5 text-[#00FF99]" /> Mathematical Formula & Chemical Principles
+            <GlassCard hoverEffect={false} className="space-y-6">
+              <div className="flex items-center gap-2 text-lg font-bold text-slate-900 dark:text-white pb-3 border-b border-slate-200/30 dark:border-emerald-950/40">
+                <Factory className="w-5 h-5 text-[#00FF99]" /> Industrial Implementation & Standard Operating Overview
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-950/80 border border-emerald-900/40 text-[#00FF99] font-mono text-sm overflow-x-auto mb-4">
-                {calc.formula}
-              </div>
-
-              <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-                {calc.longExplanation}
-              </p>
-
-              <div className="mt-6 pt-6 border-t border-slate-200/30 dark:border-emerald-950/40">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white mb-3">
-                  Industrial Use Cases & Applications
+              {/* Practical Explanation in Words */}
+              <div className="p-5 rounded-2xl glass-panel border-l-4 border-l-[#00FF99] space-y-2">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-[#00FF99] flex items-center gap-1.5">
+                  <FileText className="w-4 h-4" /> Operational Process Description
                 </h4>
-                <ul className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-slate-600 dark:text-slate-300 font-medium">
+                <p className="text-sm text-slate-700 dark:text-slate-200 leading-relaxed font-normal">
+                  {calc.longExplanation}
+                </p>
+              </div>
+
+              {/* Standard Operating Protocol & Usage Text */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
+                  Where & How It Is Used in Plant Operations
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {calc.useCases.map((uc, i) => (
-                    <li key={i} className="flex items-center gap-2 p-3 rounded-xl glass-panel">
-                      <span className="w-2 h-2 rounded-full bg-[#00FF99]" /> {uc}
-                    </li>
+                    <div
+                      key={i}
+                      className="p-4 rounded-xl glass-panel border border-slate-800 hover:border-emerald-500/40 transition-colors space-y-2"
+                    >
+                      <div className="flex items-center gap-2 text-xs font-bold text-[#00FF99]">
+                        <Check className="w-4 h-4 text-[#00FF99]" /> Application {i + 1}
+                      </div>
+                      <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">
+                        {uc}
+                      </p>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
             </GlassCard>
           </div>
