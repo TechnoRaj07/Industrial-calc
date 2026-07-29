@@ -32,11 +32,26 @@ import {
   Phone,
   MapPin,
   Globe,
+  FileCode,
+  Bold,
+  Italic,
+  Underline as UnderlineIcon,
+  Heading1,
+  Heading2,
+  Heading3,
+  List,
+  ListOrdered,
+  Quote,
+  Code,
+  Link as LinkIcon,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
 } from 'lucide-react';
 
 export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState<
-    'customizer' | 'reports' | 'blogs' | 'media' | 'messages' | 'logs' | 'users' | 'analytics' | 'settings'
+    'customizer' | 'pagecms' | 'reports' | 'blogs' | 'media' | 'messages' | 'logs' | 'users' | 'analytics' | 'settings'
   >('customizer');
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -134,7 +149,7 @@ export default function AdminDashboardPage() {
     maintenanceMode: false,
   });
 
-  // Site & Theme Customizer State (Including Contact Email, Phone, Address & Map Settings)
+  // Site & Theme Customizer State
   const [siteConfig, setSiteConfig] = useState({
     logoUrl: '/branding/logo.png',
     faviconUrl: '/favicon.ico',
@@ -176,17 +191,70 @@ export default function AdminDashboardPage() {
     showFaqSection: true,
   });
 
-  // Load persisted siteConfig on mount
+  // PAGE CMS RICH TEXT EDITOR STATE
+  const [selectedPage, setSelectedPage] = useState<'privacy' | 'terms' | 'cookies' | 'disclaimer' | 'about'>('privacy');
+  const [pagesConfig, setPagesConfig] = useState<Record<string, { title: string; content: string }>>({
+    privacy: {
+      title: 'Privacy Policy',
+      content: `<h2>1. Data Collection Principles</h2><p>IndustrialCalc collects user lead information (name, work email, mobile number, professional role) exclusively when exporting calculation reports.</p><h2>2. Use of Information</h2><p>Your inputs and parameters remain private and are processed in client-side memory to compute engineering metrics.</p><h2>3. Compliance Standards</h2><p>We strictly adhere to ISO 27001 data security practices and GDPR compliance guidelines.</p>`,
+    },
+    terms: {
+      title: 'Terms of Service',
+      content: `<h2>1. Acceptance of Terms</h2><p>By accessing IndustrialCalc, you agree to comply with our terms of service for engineering calculations.</p><h2>2. Disclaimer of Warranty</h2><p>Calculations are provided for process guidance and verification purposes. Final engineering designs should be audited by certified plant engineers.</p>`,
+    },
+    cookies: {
+      title: 'Cookie Policy',
+      content: `<h2>1. Essential Cookies</h2><p>We use essential cookies and browser local storage to remember your visual theme preference (Light/Dark mode) and active calculation parameters.</p>`,
+    },
+    disclaimer: {
+      title: 'Engineering Disclaimer',
+      content: `<h2>1. Professional Verification Required</h2><p>All calculations on IndustrialCalc are designed using validated mathematical models. However, users are advised to verify critical plant safety calculations with certified process engineers.</p>`,
+    },
+    about: {
+      title: 'About IndustrialCalc',
+      content: `<h2>Next-Gen Process Engineering Suite</h2><p>IndustrialCalc provides 50 specialized calculation engines designed for Food Processing, Dairy Technology, Biotechnology, Chemical Engineering, and Plant Automation.</p>`,
+    },
+  });
+
+  const [editorPreviewMode, setEditorPreviewMode] = useState(false);
+
+  // Load persisted siteConfig & pagesConfig on mount
   useEffect(() => {
-    const saved = localStorage.getItem('industrialcalc_siteConfig');
-    if (saved) {
+    const savedSite = localStorage.getItem('industrialcalc_siteConfig');
+    if (savedSite) {
       try {
-        setSiteConfig(JSON.parse(saved));
+        setSiteConfig(JSON.parse(savedSite));
       } catch (e) {
-        console.warn('Failed parsing saved config', e);
+        console.warn('Failed parsing siteConfig', e);
+      }
+    }
+
+    const savedPages = localStorage.getItem('industrialcalc_pagesConfig');
+    if (savedPages) {
+      try {
+        setPagesConfig(JSON.parse(savedPages));
+      } catch (e) {
+        console.warn('Failed parsing pagesConfig', e);
       }
     }
   }, []);
+
+  // RICH TEXT TOOLBAR INSERTER
+  const insertRichTag = (prefix: string, suffix: string = '') => {
+    const currentPage = pagesConfig[selectedPage];
+    if (!currentPage) return;
+    const newContent = `${currentPage.content}\n${prefix}Sample Text${suffix}`;
+    setPagesConfig({
+      ...pagesConfig,
+      [selectedPage]: { ...currentPage, content: newContent },
+    });
+  };
+
+  // Save Page CMS
+  const handleSavePageCMS = () => {
+    localStorage.setItem('industrialcalc_pagesConfig', JSON.stringify(pagesConfig));
+    showToast(`Saved Rich Content for ${pagesConfig[selectedPage].title} Successfully!`);
+  };
 
   // MODAL STATES
   const [blogModalOpen, setBlogModalOpen] = useState(false);
@@ -363,7 +431,7 @@ export default function AdminDashboardPage() {
           </div>
           <div>
             <h1 className="text-2xl font-black text-slate-900 dark:text-white">Admin Control Suite</h1>
-            <p className="text-xs text-slate-400">Manage Site Contact Details, Map Locations, Branding, CMS & Telemetry</p>
+            <p className="text-xs text-slate-400">Manage Site Contact Details, Page CMS Rich Editor, Branding, CMS & Telemetry</p>
           </div>
         </div>
 
@@ -388,6 +456,7 @@ export default function AdminDashboardPage() {
       <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
         {[
           { id: 'customizer', label: 'Site & Theme Customizer', icon: Sliders },
+          { id: 'pagecms', label: 'Page CMS (Rich Editor)', icon: FileCode },
           { id: 'reports', label: 'Report Logs', icon: FileSpreadsheet },
           { id: 'blogs', label: 'Blog CMS', icon: Newspaper },
           { id: 'media', label: 'Media Library', icon: FolderOpen },
@@ -420,7 +489,6 @@ export default function AdminDashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             {/* Left Col */}
             <div className="lg:col-span-6 space-y-6">
-              {/* CONTACT DETAILS & MAP LOCATION SECTION */}
               <GlassCard hoverEffect={false} className="space-y-4 border-[#00FF99]/40">
                 <h3 className="text-base font-bold text-[#00FF99] flex items-center gap-2">
                   <Mail className="w-5 h-5" /> Contact Information & Global Map Settings
@@ -473,7 +541,6 @@ export default function AdminDashboardPage() {
                 </div>
               </GlassCard>
 
-              {/* Logo & Identity */}
               <GlassCard hoverEffect={false} className="space-y-4">
                 <h3 className="text-base font-bold text-[#00E5FF] flex items-center gap-2">
                   <ImageIcon className="w-5 h-5" /> Logo, Favicon & Site Identity
@@ -518,7 +585,6 @@ export default function AdminDashboardPage() {
                 </div>
               </GlassCard>
 
-              {/* Hero Section */}
               <GlassCard hoverEffect={false} className="space-y-4">
                 <h3 className="text-base font-bold text-[#FF007A] flex items-center gap-2">
                   <Layout className="w-5 h-5" /> Hero Section, Text & Action Buttons
@@ -550,26 +616,6 @@ export default function AdminDashboardPage() {
                       onChange={(e) => setSiteConfig({ ...siteConfig, heroSubtext: e.target.value })}
                       className="w-full px-3.5 py-2 rounded-xl glass-panel text-white"
                     />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-slate-300 font-bold mb-1">Primary Hero Button Text</label>
-                      <input
-                        type="text"
-                        value={siteConfig.heroPrimaryBtnText}
-                        onChange={(e) => setSiteConfig({ ...siteConfig, heroPrimaryBtnText: e.target.value })}
-                        className="w-full px-3.5 py-2 rounded-xl glass-panel text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-slate-300 font-bold mb-1">Secondary Hero Button Text</label>
-                      <input
-                        type="text"
-                        value={siteConfig.heroSecondaryBtnText}
-                        onChange={(e) => setSiteConfig({ ...siteConfig, heroSecondaryBtnText: e.target.value })}
-                        className="w-full px-3.5 py-2 rounded-xl glass-panel text-white"
-                      />
-                    </div>
                   </div>
                 </div>
               </GlassCard>
@@ -621,51 +667,6 @@ export default function AdminDashboardPage() {
                 </div>
               </GlassCard>
 
-              <GlassCard hoverEffect={false} className="space-y-4">
-                <h3 className="text-base font-bold text-[#00E5FF] flex items-center gap-2">
-                  <Type className="w-5 h-5" /> Typography, Font, Card Blur & Button Shapes
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                  <div>
-                    <label className="block text-slate-300 font-bold mb-1">Font Family</label>
-                    <select
-                      value={siteConfig.fontFamily}
-                      onChange={(e) => setSiteConfig({ ...siteConfig, fontFamily: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl glass-panel text-white bg-slate-900"
-                    >
-                      <option value="Inter">Inter (Default)</option>
-                      <option value="Roboto">Roboto</option>
-                      <option value="Outfit">Outfit</option>
-                      <option value="System UI">System UI</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-slate-300 font-bold mb-1">Card Glass Blur</label>
-                    <select
-                      value={siteConfig.cardBlur}
-                      onChange={(e) => setSiteConfig({ ...siteConfig, cardBlur: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl glass-panel text-white bg-slate-900"
-                    >
-                      <option value="12px">12px Subtle</option>
-                      <option value="24px">24px VisionOS (Default)</option>
-                      <option value="32px">32px Ultra Blur</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-slate-300 font-bold mb-1">Button Shape</label>
-                    <select
-                      value={siteConfig.buttonStyle}
-                      onChange={(e) => setSiteConfig({ ...siteConfig, buttonStyle: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl glass-panel text-white bg-slate-900"
-                    >
-                      <option value="rounded-full">Pill (rounded-full)</option>
-                      <option value="rounded-2xl">Modern (rounded-2xl)</option>
-                      <option value="rounded-xl">Classic (rounded-xl)</option>
-                    </select>
-                  </div>
-                </div>
-              </GlassCard>
-
               <button
                 onClick={handleSaveCustomizer}
                 className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-[#00FF99] text-black font-black text-sm uppercase tracking-wider hover:opacity-95 transition-all shadow-xl flex items-center justify-center gap-2"
@@ -675,6 +676,196 @@ export default function AdminDashboardPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* TAB 2: PAGE CMS (RICH MODERN TEXT EDITOR) */}
+      {activeTab === 'pagecms' && (
+        <GlassCard hoverEffect={false} className="space-y-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+            <div>
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <FileCode className="w-5 h-5 text-[#00FF99]" /> Page Content CMS & Rich Modern WYSIWYG Editor
+              </h3>
+              <p className="text-xs text-slate-400">Edit Legal & Support pages (Privacy Policy, Terms of Service, Cookie Policy, Disclaimer, About Us)</p>
+            </div>
+
+            <button
+              onClick={handleSavePageCMS}
+              className="px-6 py-2.5 rounded-xl bg-[#00FF99] text-black text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-lg hover:opacity-90"
+            >
+              <Check className="w-4 h-4" /> Save Page Content
+            </button>
+          </div>
+
+          {/* PAGE SELECTOR TABS */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2">
+            {[
+              { id: 'privacy', label: 'Privacy Policy' },
+              { id: 'terms', label: 'Terms of Service' },
+              { id: 'cookies', label: 'Cookie Policy' },
+              { id: 'disclaimer', label: 'Disclaimer' },
+              { id: 'about', label: 'About Us' },
+            ].map((p) => (
+              <button
+                key={p.id}
+                onClick={() => setSelectedPage(p.id as any)}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                  selectedPage === p.id
+                    ? 'bg-emerald-500/20 text-[#00FF99] border border-[#00FF99]'
+                    : 'glass-panel text-slate-300 hover:text-white'
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+
+          {/* PAGE TITLE FIELD */}
+          <div className="space-y-1">
+            <label className="text-xs font-bold uppercase text-slate-300">Page Headline Title</label>
+            <input
+              type="text"
+              value={pagesConfig[selectedPage]?.title || ''}
+              onChange={(e) =>
+                setPagesConfig({
+                  ...pagesConfig,
+                  [selectedPage]: { ...pagesConfig[selectedPage], title: e.target.value },
+                })
+              }
+              className="w-full px-4 py-2.5 rounded-xl glass-panel text-white font-bold text-sm"
+            />
+          </div>
+
+          {/* RICH MODERN TEXT EDITOR TOOLBAR */}
+          <div className="rounded-2xl glass-panel border border-slate-800 overflow-hidden space-y-0">
+            <div className="p-3 bg-slate-950/80 border-b border-slate-800 flex items-center flex-wrap gap-1.5 text-xs text-slate-300">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 mr-2">WYSIWYG Toolbar:</span>
+              <button
+                type="button"
+                onClick={() => insertRichTag('<b>', '</b>')}
+                className="p-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-[#00FF99]"
+                title="Bold"
+              >
+                <Bold className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => insertRichTag('<i>', '</i>')}
+                className="p-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-[#00FF99]"
+                title="Italic"
+              >
+                <Italic className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => insertRichTag('<u>', '</u>')}
+                className="p-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-[#00FF99]"
+                title="Underline"
+              >
+                <UnderlineIcon className="w-4 h-4" />
+              </button>
+              <div className="h-4 w-px bg-slate-800 mx-1" />
+              <button
+                type="button"
+                onClick={() => insertRichTag('<h2>', '</h2>')}
+                className="p-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-[#00FF99]"
+                title="Heading 2"
+              >
+                <Heading1 className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => insertRichTag('<h3>', '</h3>')}
+                className="p-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-[#00FF99]"
+                title="Heading 3"
+              >
+                <Heading2 className="w-4 h-4" />
+              </button>
+              <div className="h-4 w-px bg-slate-800 mx-1" />
+              <button
+                type="button"
+                onClick={() => insertRichTag('<ul>\n  <li>', '</li>\n</ul>')}
+                className="p-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-[#00FF99]"
+                title="Bullet List"
+              >
+                <List className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => insertRichTag('<ol>\n  <li>', '</li>\n</ol>')}
+                className="p-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-[#00FF99]"
+                title="Numbered List"
+              >
+                <ListOrdered className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => insertRichTag('<blockquote>', '</blockquote>')}
+                className="p-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-[#00FF99]"
+                title="Blockquote"
+              >
+                <Quote className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => insertRichTag('<code>', '</code>')}
+                className="p-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-[#00FF99]"
+                title="Code"
+              >
+                <Code className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => insertRichTag('<a href="https://industrialcalc.app">', '</a>')}
+                className="p-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-[#00FF99]"
+                title="Insert Link"
+              >
+                <LinkIcon className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => insertRichTag('<img src="https://images.unsplash.com/photo-1527661591475-527312dd65f5" alt="Banner" class="w-full rounded-xl my-4" />')}
+                className="p-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-[#00FF99]"
+                title="Insert Image"
+              >
+                <ImageIcon className="w-4 h-4" />
+              </button>
+
+              <div className="ml-auto flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditorPreviewMode(!editorPreviewMode)}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
+                    editorPreviewMode ? 'bg-[#00FF99] text-black' : 'bg-slate-800 text-slate-300 hover:text-white'
+                  }`}
+                >
+                  <Eye className="w-3.5 h-3.5" /> {editorPreviewMode ? 'Edit Mode' : 'Live Preview'}
+                </button>
+              </div>
+            </div>
+
+            {/* EDITOR / PREVIEW CONTENT */}
+            {editorPreviewMode ? (
+              <div
+                className="p-6 bg-slate-950 text-slate-200 text-sm leading-relaxed min-h-[350px] max-h-[500px] overflow-y-auto prose dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: pagesConfig[selectedPage]?.content || '' }}
+              />
+            ) : (
+              <textarea
+                rows={14}
+                value={pagesConfig[selectedPage]?.content || ''}
+                onChange={(e) =>
+                  setPagesConfig({
+                    ...pagesConfig,
+                    [selectedPage]: { ...pagesConfig[selectedPage], content: e.target.value },
+                  })
+                }
+                className="w-full p-6 bg-slate-950 text-emerald-400 font-mono text-xs sm:text-sm focus:outline-none leading-relaxed border-none resize-y min-h-[350px]"
+                placeholder="Write or edit HTML content using the Rich Toolbar above..."
+              />
+            )}
+          </div>
+        </GlassCard>
       )}
 
       {/* OTHER TABS */}
