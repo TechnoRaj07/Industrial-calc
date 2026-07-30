@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: industrialcalc
+    env: node
+    plan: free
+    buildCommand: npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        value: https://txfxinxhqmeopjscanyz.supabase.co
+      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        value: sb_publishable_Iu_k8_IGal5pK8dGET3p4w_lAv95L_X
+      - key: JWT_SECRET
+        generateValue: true
